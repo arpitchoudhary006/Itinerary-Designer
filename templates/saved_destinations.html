@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Saved Destinations | Himalayan Travel Itinerary Designer{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h1>Saved Destinations</h1>
+            <p style="color: var(--muted); font-size: 1.05rem;">
+                Your bookmarked Himalayan peaks, valleys, and pilgrimage spots.
+            </p>
+        </div>
+        <a href="{{ url_for('destinations') }}" class="btn primary">Browse Destination Catalog</a>
+    </div>
+
+    {% if saved %}
+        <div class="grid dest-grid">
+            {% for dest in saved %}
+                <article class="card">
+                    <div class="card-body">
+                        <span class="tag">{{ dest.state or 'Himalayas' }}</span>
+                        <h2 style="font-size: 1.35rem; margin: 8px 0 16px;">{{ dest.name }}</h2>
+                        
+                        <div class="cta-row" style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 14px;">
+                            <a class="btn sm primary" href="{{ url_for('destination_detail', slug=dest.slug) }}">
+                                View Guide & Stays
+                            </a>
+                            <form method="post" action="{{ url_for('toggle_saved_destination', slug=dest.slug) }}" style="display:inline; margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button class="btn sm danger" type="submit">Remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="day-card" style="text-align: center; padding: 50px 20px;">
+            <div style="font-size: 3rem; margin-bottom: 12px;">⭐</div>
+            <h2>No saved destinations yet</h2>
+            <p style="color: var(--muted); margin: 8px auto 20px; max-width: 440px;">
+                As you explore the catalog, click "Save Destination" on any destination to keep track of places you want to visit.
+            </p>
+            <a class="btn primary" href="{{ url_for('destinations') }}">Explore Destinations</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

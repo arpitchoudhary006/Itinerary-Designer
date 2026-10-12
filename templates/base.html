@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Himalayan Travel Itinerary Designer{% endblock %}</title>
+    
+    <!-- Google Fonts & Leaflet CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Application Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Main Sticky Navigation -->
+    <nav class="topbar">
+        <a href="{{ url_for('home') }}" class="brand">
+            <span class="brand-icon">🏔️</span>
+            <div>
+                <span>Himalayan Itinerary Designer</span>
+                <span class="brand-sub">Treks • Stays • Weather • Maps</span>
+            </div>
+        </a>
+        
+        <div class="nav-links">
+            <a href="{{ url_for('destinations') }}">Destinations & Map</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('my_itineraries') }}">My Trips</a>
+                <a href="{{ url_for('saved_destinations') }}">Saved Places</a>
+                <a href="{{ url_for('preferences') }}">Preferences</a>
+                {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+                {% endif %}
+                <span class="user-badge">👤 {{ current_user.name }}</span>
+                <form method="post" action="{{ url_for('logout') }}" style="display:inline; margin:0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button class="nav-logout" type="submit">Sign Out</button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('login') }}">Sign In</a>
+                <a href="{{ url_for('register') }}" class="btn primary sm">Create Account</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Flashed Alert Messages -->
+    <div class="container" style="padding-bottom: 0;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="notice {{ category }}" role="alert">
+                        {% if category == 'success' %}✅{% elif category == 'error' %}⚠️{% else %}ℹ️{% endif %}
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Page Content -->
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p><strong>Himalayan Travel Itinerary Designer</strong> — Precision trip planning, mountain weather forecasting, verified hotels & homestays, and interactive topographic maps.</p>
+        <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;">Covering Garhwal, Kumaon, Dhauladhar, and Pir Panjal Himalayan Ranges.</p>
+    </footer>
+
+    <!-- Leaflet JS & App Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script>
+        // Image error fallback placeholder
+        const fallbackSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 400'%3E%3Crect width='100%25' height='100%25' fill='%23e2e8f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%2364748b' font-size='24' font-family='sans-serif'%3EHimalayan Scenery%3C/text%3E%3C/svg%3E";
+        document.querySelectorAll('img').forEach((img) => {
+            img.addEventListener('error', () => { img.src = fallbackSvg; }, { once: true });
+        });
+
+        // Form submit spinner protection
+        document.querySelectorAll('form[data-loading]').forEach((form) => {
+            form.addEventListener('submit', () => {
+                const btn = form.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = 'Processing...';
+                }
+            });
+        });
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

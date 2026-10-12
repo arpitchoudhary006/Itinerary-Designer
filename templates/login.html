@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In | Himalayan Travel Itinerary Designer{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <!-- Left Hero Banner -->
+    <div class="auth-banner">
+        <div>
+            <span class="tag" style="background: rgba(255,255,255,0.2); color:#fff; margin-bottom: 14px;">Himalayan Expedition Planner</span>
+            <h2>Craft Your Dream Himalayan Journey</h2>
+            <p>Tailored high-altitude itineraries, mountain weather forecasts, curated authentic homestays & hotels, and interactive terrain maps.</p>
+            
+            <ul class="auth-features-list">
+                <li><span>🏔️</span> <strong>Handcrafted Trek & Tour Templates</strong></li>
+                <li><span>🏡</span> <strong>Nearby Verified Homestays & Alpine Hotels</strong></li>
+                <li><span>🌦️</span> <strong>Live Weather Forecast & Safety Advisories</strong></li>
+                <li><span>🗺️</span> <strong>Interactive Maps with Relief Topography</strong></li>
+            </ul>
+        </div>
+        
+        <div style="font-size: 0.85rem; color: rgba(255,255,255,0.75);">
+            Private & secure account-scoped travel plans.
+        </div>
+    </div>
+
+    <!-- Right Login Form -->
+    <div class="auth-form-side">
+        <h1>Welcome Back</h1>
+        <p class="subtitle">Sign in to access your saved itineraries and personalized Himalayan guides.</p>
+
+        {% if error %}
+            <div class="error-banner" role="alert">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('login') }}" class="grid" data-loading id="login-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="next" value="{{ next_url }}">
+            
+            <label class="field">
+                <span>Username or Email</span>
+                <input type="text" name="email" id="email-field" autocomplete="username" required placeholder="Username or Email (e.g. arpit.06)" value="{{ request.form.get('email', '') }}">
+            </label>
+            
+            <label class="field">
+                <span>Password</span>
+                <input type="password" name="password" id="password-field" autocomplete="current-password" required placeholder="Your password">
+            </label>
+            
+            <button class="btn primary" type="submit" style="width: 100%; margin-top: 6px;">Sign In to Dashboard</button>
+        </form>
+
+        <div style="margin-top: 24px; text-align: center; font-size: 0.92rem; color: var(--muted);">
+            Don't have an account yet? <a href="{{ url_for('register') }}" style="color: var(--primary); font-weight: 700;">Create an account</a>
+        </div>
+        
+        <div style="margin-top: 10px; text-align: center; font-size: 0.88rem;">
+            <a href="{{ url_for('destinations') }}" style="color: var(--muted); text-decoration: underline;">Or browse destinations as guest →</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

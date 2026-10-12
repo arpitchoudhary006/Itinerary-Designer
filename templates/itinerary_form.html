@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}{{ heading }} | Himalayan Travel Designer{% endblock %}
+
+{% block content %}
+<section class="section" style="max-width: 900px; margin: 10px auto;">
+    <div class="section-header">
+        <div>
+            <h1>{{ heading }}</h1>
+            <p style="color: var(--muted); font-size: 1rem;">
+                Craft a personalized day-by-day plan with Himalayan stay selection, activity scheduling, and budget calculations.
+            </p>
+        </div>
+        <a href="{{ url_for('my_itineraries') }}" class="btn sm">Back to My Trips</a>
+    </div>
+
+    <div class="form-shell">
+        <form method="post" action="{{ action }}" class="grid" data-loading id="itinerary-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="form-grid">
+                <!-- Trip Name -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Trip Title</span>
+                    <input name="name" maxlength="100" value="{{ trip.get('name', '') }}" placeholder="e.g. Autumn Chopta & Chandrashila Expedition" required>
+                </label>
+
+                <!-- Destination -->
+                <label class="field">
+                    <span>Himalayan Destination</span>
+                    <select name="destination_id" id="destination-select" required onchange="handleDestinationChange(this.value)">
+                        {% for dest in destinations %}
+                            <option value="{{ dest.id }}" {% if trip.get('destination_id')|string == dest.id|string %}selected{% endif %}>
+                                {{ dest.name }} ({{ dest.state }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <!-- Preferred Hotel / Homestay -->
+                <label class="field">
+                    <span>Preferred Hotel / Homestay</span>
+                    <select name="accommodation_id" id="accommodation-select">
+                        <option value="">-- Choose Hotel / Homestay (Optional) --</option>
+                        {% for acc in all_accommodations %}
+                            <option value="{{ acc.id }}" data-dest-id="{{ acc.destination_id }}" {% if trip.get('accommodation_id')|string == acc.id|string %}selected{% endif %}>
+                                [{{ acc.type }}] {{ acc.name }} — ₹{{ '{:,.0f}'.format(acc.price_per_night) }}/nt
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <!-- Departure Date -->
+                <label class="field">
+                    <span>Departure Date</span>
+                    <input type="date" name="start_date" id="start-date" value="{{ trip.get('start_date', today) }}" required onchange="updateDates()">
+                </label>
+
+                <!-- Return Date -->
+                <label class="field">
+                    <span>Return Date</span>
+                    <input type="date" name="end_date" id="end-date" value="{{ trip.get('end_date', default_end) }}" required onchange="updateDates()">
+                </label>
+
+                <!-- Travelers -->
+                <label class="field">
+                    <span>Number of Travelers</span>
+                    <input type="number" name="number_of_travelers" min="1" max="20" value="{{ trip.get('number_of_travelers', 2) }}" required>
+                </label>
+
+                <!-- Budget -->
+                <label class="field">
+                    <span>Total Budget (INR)</span>
+                    <input type="number" name="budget" min="1" max="10000000" step="100" value="{{ trip.get('budget', default_budget) }}" required>
+                </label>
+
+                <!-- Travel Style -->
+                <label class="field">
+                    <span>Travel Style</span>
+                    <select name="travel_style">
+                        {% for style in styles %}
+                            <option {% if trip.get('travel_style', preferences.get('preferred_travel_style', 'Moderate')) == style %}selected{% endif %}>
+                                {{ style }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <!-- Transport -->
+                <label class="field">
+                    <span>Transport Preference</span>
+                    <select name="transport_preference">
+                        {% for opt in transports %}
+                            <option {% if trip.get('transport_preference', preferences.get('transport_preference', 'Train')) == opt %}selected{% endif %}>
+                                {{ opt }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <!-- Accommodation Type -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Stay Preference Type</span>
+                    <select name="accommodation_preference">
+                        {% for opt in accommodations_opts %}
+                            <option {% if trip.get('accommodation_preference', preferences.get('accommodation_preference', 'Homestay')) == opt %}selected{% endif %}>
+                                {{ opt }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+
+            <!-- If Editing, Day-by-Day Editor -->
+            {% if editing and trip.get('days') %}
+                <div class="section" style="margin-top: 30px;">
+                    <h2>Day-by-Day Itinerary Schedule</h2>
+                    <p style="color: var(--muted); font-size: 0.92rem; margin-bottom: 16px;">
+                        Adjust the daily titles, notes, and activity list (one activity per line).
+                    </p>
+
+                    <div class="timeline">
+                        {% for day in trip.days %}
+                            <div class="day-card">
+                                <div class="day-card-header">
+                                    <h3>Day {{ day.day_number }} • {{ day.date }}</h3>
+                                    <span class="pill">Scheduled</span>
+                                </div>
+
+                                <div class="grid" style="gap: 12px;">
+                                    <label class="field">
+                                        <span>Day Title</span>
+                                        <input name="day_title_{{ day.day_number }}" maxlength="120" value="{{ day.title }}" required>
+                                    </label>
+
+                                    <label class="field">
+                                        <span>Daily Route Notes & Altitude Tips</span>
+                                        <textarea name="day_notes_{{ day.day_number }}" maxlength="1000">{{ day.notes }}</textarea>
+                                    </label>
+
+                                    <label class="field">
+                                        <span>Planned Activities (One per line)</span>
+                                        <textarea name="day_activities_{{ day.day_number }}" maxlength="2400" placeholder="Activity 1&#10;Activity 2">{% for act in day.activities %}{{ act.custom_name or act.activity_name }}{% if not loop.last %}&#10;{% endif %}{% endfor %}</textarea>
+                                    </label>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="cta-row" style="margin-top: 24px;">
+                <button class="btn accent" type="submit" style="padding: 14px 28px; font-size: 1.05rem;">
+                    {{ submit_label }}
+                </button>
+                <a href="{{ url_for('my_itineraries') }}" class="btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function handleDestinationChange(destId) {
+        const accSelect = document.getElementById('accommodation-select');
+        if (!accSelect) return;
+        
+        let foundFirst = false;
+        Array.from(accSelect.options).forEach((opt, idx) => {
+            if (idx === 0) return; // skip default placeholder
+            const optDestId = opt.dataset.destId;
+            if (!destId || optDestId === destId) {
+                opt.style.display = 'block';
+                if (!foundFirst) {
+                    opt.selected = true;
+                    foundFirst = true;
+                }
+            } else {
+                opt.style.display = 'none';
+                if (opt.selected) opt.selected = false;
+            }
+        });
+    }
+
+    function updateDates() {
+        const s = document.getElementById('start-date');
+        const e = document.getElementById('end-date');
+        if (s && e && s.value && e.value && e.value < s.value) {
+            e.value = s.value;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const dSelect = document.getElementById('destination-select');
+        if (dSelect) {
+            handleDestinationChange(dSelect.value);
+        }
+    });
+</script>
+{% endblock %}

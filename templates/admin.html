@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Overview | Himalayan Travel Itinerary Designer{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="section-header">
+        <div>
+            <span class="tag" style="background:#fee2e2; color:#991b1b; margin-bottom:6px;">Administrator Panel</span>
+            <h1>Application Administration Overview</h1>
+            <p style="color: var(--muted); font-size: 1rem;">
+                System telemetry and metrics. User itineraries remain private and account-scoped.
+            </p>
+        </div>
+        <a href="{{ url_for('destinations') }}" class="btn sm primary">Catalog View</a>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="hero-stats" style="max-width: 100%; margin: 24px 0 36px;">
+        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+            <strong style="color: var(--primary-dark); font-size: 2.2rem;">{{ counts.users }}</strong>
+            <span style="color: var(--muted); font-weight: 700;">Registered Travelers</span>
+        </div>
+        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+            <strong style="color: var(--accent); font-size: 2.2rem;">{{ counts.destinations }}</strong>
+            <span style="color: var(--muted); font-weight: 700;">Himalayan Destinations</span>
+        </div>
+        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+            <strong style="color: var(--hotel-color); font-size: 2.2rem;">{{ counts.accommodations }}</strong>
+            <span style="color: var(--muted); font-weight: 700;">Hotels & Homestays</span>
+        </div>
+        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+            <strong style="color: var(--homestay-color); font-size: 2.2rem;">{{ counts.itineraries }}</strong>
+            <span style="color: var(--muted); font-weight: 700;">Generated Itineraries</span>
+        </div>
+    </div>
+
+    <!-- Destinations Management Quick Table -->
+    <div class="day-card">
+        <h3>Catalog Destinations & Stays Summary</h3>
+        <div style="overflow-x: auto; margin-top: 14px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.92rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                        <th style="padding: 10px 8px;">Destination</th>
+                        <th style="padding: 10px 8px;">State</th>
+                        <th style="padding: 10px 8px;">Elevation</th>
+                        <th style="padding: 10px 8px;">Difficulty</th>
+                        <th style="padding: 10px 8px;">Est. Budget</th>
+                        <th style="padding: 10px 8px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dest in destinations %}
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 12px 8px; font-weight: 700;">{{ dest.name }}</td>
+                            <td style="padding: 12px 8px;"><span class="tag">{{ dest.state }}</span></td>
+                            <td style="padding: 12px 8px;">{{ dest.elevation }}</td>
+                            <td style="padding: 12px 8px;">{{ dest.difficulty }}</td>
+                            <td style="padding: 12px 8px;">₹{{ '{:,.0f}'.format(dest.estimated_budget or 0) }}</td>
+                            <td style="padding: 12px 8px;">
+                                <a href="{{ url_for('destination_detail', slug=dest.slug) }}" class="btn sm" target="_blank">View Guide →</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

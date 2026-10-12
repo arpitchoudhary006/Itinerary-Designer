@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}My Trips | Himalayan Travel Itinerary Designer{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h1>My Himalayan Itineraries</h1>
+            <p style="color: var(--muted); font-size: 1.05rem;">
+                Private travel plans created under your account. All data remains exclusively accessible to you.
+            </p>
+        </div>
+        <a class="btn primary" href="{{ url_for('new_itinerary') }}">➕ Create New Itinerary</a>
+    </div>
+
+    {% if itineraries %}
+        <div class="grid">
+            {% for trip in itineraries %}
+                <article class="day-card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                    <div style="flex: 1; min-width: 280px;">
+                        <span class="tag" style="margin-bottom: 8px;">{{ trip.destination_name or 'Himalayan Expedition' }}</span>
+                        <h2 style="font-size: 1.4rem; margin-top: 4px;">{{ trip.name }}</h2>
+                        
+                        <div style="font-size: 0.9rem; color: var(--muted); margin: 6px 0 12px; display: flex; flex-wrap: wrap; gap: 14px;">
+                            <span>📅 <strong>Dates:</strong> {{ trip.start_date }} to {{ trip.end_date }}</span>
+                            <span>👥 <strong>Travelers:</strong> {{ trip.number_of_travelers }}</span>
+                            <span>💰 <strong>Budget:</strong> ₹{{ '{:,.0f}'.format(trip.budget or 0) }}</span>
+                            <span>🎒 <strong>Style:</strong> {{ trip.travel_style or 'Moderate' }}</span>
+                        </div>
+
+                        {% if trip.accommodation_name %}
+                            <div style="font-size: 0.85rem; color: var(--primary-dark); font-weight: 700; background: var(--primary-light); display: inline-block; padding: 3px 10px; border-radius: 999px;">
+                                🏡 Reserved Stay: {{ trip.accommodation_name }} ({{ trip.accommodation_type }})
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="cta-row">
+                        <a class="btn primary sm" href="{{ url_for('itinerary_detail', itinerary_id=trip.id) }}">
+                            View Details & Map
+                        </a>
+                        <a class="btn sm" href="{{ url_for('edit_itinerary', itinerary_id=trip.id) }}">
+                            ✏️ Edit Plan
+                        </a>
+                        <a class="btn sm" href="{{ url_for('export_itinerary', itinerary_id=trip.id) }}" title="Download Text Summary">
+                            📄 Download TXT
+                        </a>
+                        <form method="post" action="{{ url_for('delete_itinerary', itinerary_id=trip.id) }}" style="display:inline; margin:0;" data-loading onsubmit="return confirm('Permanently delete this itinerary?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button class="btn danger sm" type="submit">Delete</button>
+                        </form>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="day-card" style="text-align: center; padding: 50px 20px;">
+            <div style="font-size: 3.5rem; margin-bottom: 12px;">🗺️</div>
+            <h2>No trips saved yet</h2>
+            <p style="color: var(--muted); margin: 8px auto 24px; max-width: 480px;">
+                Design a custom mountain itinerary with day-by-day activities, estimated costs, and verified local homestays.
+            </p>
+            <a class="btn accent" href="{{ url_for('new_itinerary') }}">Plan Your First Trip Now</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

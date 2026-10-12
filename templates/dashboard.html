@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Himalayan Travel Itinerary Designer{% endblock %}
+
+{% block content %}
+<section class="hero" style="padding: 36px 32px;">
+    <div style="max-width: 800px;">
+        <span class="tag" style="background: rgba(255,255,255,0.22); color:#fff; margin-bottom: 12px;">Traveler Dashboard</span>
+        <h1 style="font-size: 2.4rem; margin-bottom: 8px;">Welcome back, {{ current_user.name }}!</h1>
+        <p style="font-size: 1.05rem; margin-bottom: 20px;">Ready to explore snow-capped peaks and serene valleys? Manage your saved itineraries, discover nearby homestays, or map out your next trek.</p>
+        
+        <div class="cta-row">
+            <a class="btn accent" href="{{ url_for('new_itinerary') }}">➕ Plan a New Journey</a>
+            <a class="btn ghost" href="{{ url_for('destinations') }}">🗺️ Explore Destinations & Map</a>
+        </div>
+    </div>
+</section>
+
+<!-- Dashboard Stats -->
+<div class="hero-stats" style="max-width: 100%; margin-bottom: 32px;">
+    <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+        <strong style="color: var(--primary-dark); font-size: 2.2rem;">{{ itineraries|length }}</strong>
+        <span style="color: var(--muted); font-weight: 700;">My Itineraries</span>
+    </div>
+    <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+        <strong style="color: var(--homestay-color); font-size: 2.2rem;">{{ saved|length }}</strong>
+        <span style="color: var(--muted); font-weight: 700;">Saved Bookmarks</span>
+    </div>
+    <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+        <strong style="color: var(--accent); font-size: 2.2rem;">{{ destination_count }}</strong>
+        <span style="color: var(--muted); font-weight: 700;">Destinations Available</span>
+    </div>
+</div>
+
+<!-- Recent Trips Section -->
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2>My Recent Himalayan Trips</h2>
+            <p style="color: var(--muted); font-size: 0.95rem;">Private itineraries created and tailored by you.</p>
+        </div>
+        {% if itineraries %}
+            <a href="{{ url_for('my_itineraries') }}" style="color: var(--primary); font-weight: 700;">View All Trips ({{ itineraries|length }}) →</a>
+        {% endif %}
+    </div>
+
+    {% if itineraries %}
+        <div class="grid">
+            {% for trip in itineraries[:3] %}
+                <div class="day-card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <span class="tag" style="margin-bottom: 6px;">{{ trip.destination_name }}</span>
+                        <h3 style="margin-top: 4px;">{{ trip.name }}</h3>
+                        <p style="color: var(--muted); font-size: 0.9rem; margin-top: 4px;">
+                            📅 {{ trip.start_date }} to {{ trip.end_date }} • 👥 {{ trip.number_of_travelers }} Traveler(s) • 💰 ₹{{ '{:,.0f}'.format(trip.budget or 0) }}
+                        </p>
+                    </div>
+                    <div class="cta-row">
+                        <a class="btn primary sm" href="{{ url_for('itinerary_detail', itinerary_id=trip.id) }}">Open Plan</a>
+                        <a class="btn sm" href="{{ url_for('edit_itinerary', itinerary_id=trip.id) }}">Edit</a>
+                        <a class="btn sm" href="{{ url_for('export_itinerary', itinerary_id=trip.id) }}">Download TXT</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="day-card" style="text-align: center; padding: 40px 20px;">
+            <div style="font-size: 3rem; margin-bottom: 12px;">🏔️</div>
+            <h3>You haven't created any itineraries yet</h3>
+            <p style="color: var(--muted); margin: 8px 0 20px; max-width: 480px; margin-inline: auto;">
+                Select one of our Himalayan destinations and customize day-wise activities, stay options, and travel dates.
+            </p>
+            <a class="btn primary" href="{{ url_for('new_itinerary') }}">Create Your First Itinerary</a>
+        </div>
+    {% endif %}
+</section>
+
+<!-- Saved Destinations Quick Glance -->
+{% if saved %}
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2>Saved Destinations</h2>
+            <p style="color: var(--muted); font-size: 0.95rem;">Places bookmarked for your future adventures.</p>
+        </div>
+        <a href="{{ url_for('saved_destinations') }}" style="color: var(--primary); font-weight: 700;">View All Saved →</a>
+    </div>
+
+    <div class="grid dest-grid">
+        {% for dest in saved[:3] %}
+            <div class="card">
+                <div class="card-body">
+                    <span class="tag">{{ dest.state or 'Himalayas' }}</span>
+                    <h3>{{ dest.name }}</h3>
+                    <div class="card-meta" style="margin-top: 14px;">
+                        <a href="{{ url_for('destination_detail', slug=dest.slug) }}" class="btn sm primary">Explore Stays & Guide</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

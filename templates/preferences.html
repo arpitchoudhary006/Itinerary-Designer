@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Travel Preferences | Himalayan Travel Itinerary Designer{% endblock %}
+
+{% block content %}
+<section class="section" style="max-width: 800px; margin: 10px auto;">
+    <div class="section-header">
+        <div>
+            <h1>Travel Preferences</h1>
+            <p style="color: var(--muted); font-size: 1.05rem;">
+                Set your default preferences for faster, personalized itinerary planning.
+            </p>
+        </div>
+    </div>
+
+    <div class="form-shell">
+        {% if error %}
+            <div class="error-banner" role="alert">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('preferences') }}" class="grid" data-loading>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="form-grid">
+                <label class="field">
+                    <span>Preferred Travel Style</span>
+                    <select name="preferred_travel_style">
+                        {% for item in styles %}
+                            <option {% if values.get('preferred_travel_style', 'Moderate') == item %}selected{% endif %}>
+                                {{ item }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>Typical Budget Tier</span>
+                    <select name="preferred_budget">
+                        {% for item in budgets %}
+                            <option {% if values.get('preferred_budget', 'Flexible') == item %}selected{% endif %}>
+                                {{ item }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>Preferred Accommodation Type</span>
+                    <select name="accommodation_preference">
+                        {% for item in accommodations %}
+                            <option {% if values.get('accommodation_preference', 'Homestay') == item %}selected{% endif %}>
+                                {{ item }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>Preferred Transport</span>
+                    <select name="transport_preference">
+                        {% for item in transports %}
+                            <option {% if values.get('transport_preference', 'Train') == item %}selected{% endif %}>
+                                {{ item }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+
+            <label class="field">
+                <span>Dietary, Altitude & Accessibility Notes</span>
+                <textarea name="notes" maxlength="500" placeholder="e.g. Vegetarian meals preferred; need gradual acclimatization days; favor rustic mountain cottages with heated rooms.">{{ values.get('notes', '') }}</textarea>
+            </label>
+
+            <div class="cta-row" style="margin-top: 14px;">
+                <button class="btn primary" type="submit">Save Travel Preferences</button>
+                <a href="{{ url_for('dashboard') }}" class="btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

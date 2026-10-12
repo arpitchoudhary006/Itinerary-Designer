@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}{{ trip.name }} | Itinerary Detail | Himalayan Travel Designer{% endblock %}
+
+{% block content %}
+<section class="section" style="margin-top: 10px;">
+    <!-- Top Action Bar -->
+    <div class="section-header">
+        <div>
+            <span class="tag" style="margin-bottom: 8px;">{{ destination.state or 'Himalayan Journey' }}</span>
+            <h1 style="font-size: 2.3rem;">{{ trip.name }}</h1>
+            <p style="color: var(--muted); font-size: 1rem; margin-top: 4px;">
+                🏔️ Destination: <a href="{{ url_for('destination_detail', slug=destination.slug) }}" style="color: var(--primary); font-weight: 700; text-decoration: underline;">{{ destination.name }}</a>
+                • 📅 {{ trip.start_date }} to {{ trip.end_date }} ({{ trip.days|length }} Days)
+                • 👥 {{ trip.number_of_travelers }} Traveler(s)
+            </p>
+        </div>
+
+        <div class="cta-row">
+            <a class="btn primary sm" href="{{ url_for('edit_itinerary', itinerary_id=trip.id) }}">✏️ Edit Itinerary</a>
+            <a class="btn sm" href="{{ url_for('export_itinerary', itinerary_id=trip.id) }}">📄 Download TXT Plan</a>
+            <a class="btn sm" href="{{ url_for('my_itineraries') }}">Back to Trips</a>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="hero-stats" style="max-width: 100%; margin: 20px 0 30px;">
+        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+            <strong style="color: var(--primary-dark); font-size: 1.8rem;">₹{{ '{:,.0f}'.format(trip.budget or 0) }}</strong>
+            <span style="color: var(--muted); font-weight: 700;">Total Budget</span>
+        </div>
+        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+            <strong style="color: var(--accent); font-size: 1.8rem;">{{ trip.travel_style or 'Moderate' }}</strong>
+            <span style="color: var(--muted); font-weight: 700;">Travel Style</span>
+        </div>
+        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+            <strong style="color: var(--hotel-color); font-size: 1.8rem;">{{ trip.transport_preference or 'Train' }}</strong>
+            <span style="color: var(--muted); font-weight: 700;">Transport</span>
+        </div>
+        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+            <strong style="color: var(--homestay-color); font-size: 1.8rem;">{{ trip.accommodation_preference or 'Homestay' }}</strong>
+            <span style="color: var(--muted); font-weight: 700;">Stay Style</span>
+        </div>
+    </div>
+
+    <!-- ACCOMMODATION SPOTLIGHT -->
+    {% if accommodation %}
+        <div class="day-card" style="background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); border-left: 5px solid var(--hotel-color); margin-bottom: 28px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <span class="tag {{ 'homestay' if 'Home' in accommodation.type else 'hotel' }}" style="margin-bottom: 6px;">
+                        Selected Stay • {{ accommodation.type }}
+                    </span>
+                    <h3 style="font-size: 1.35rem;">{{ accommodation.name }}</h3>
+                    <p style="color: var(--muted); font-size: 0.9rem; margin: 4px 0 10px;">
+                        📍 {{ accommodation.distance or 'Close to base trailhead' }} • ⭐ {{ accommodation.rating }}/5
+                    </p>
+                    <p style="font-size: 0.92rem; max-width: 680px;">{{ accommodation.description }}</p>
+                    
+                    {% if accommodation.amenities %}
+                        <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;">
+                            {% for a in accommodation.amenities.split('•') %}
+                                <span class="amenity-chip">{{ a.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div style="text-align: right;">
+                    <div style="font-size: 1.4rem; font-weight: 900; color: var(--primary-dark);">
+                        ₹{{ '{:,.0f}'.format(accommodation.price_per_night) }}
+                        <span style="font-size: 0.8rem; font-weight: normal; color: var(--muted);">/ night</span>
+                    </div>
+                    {% if accommodation.phone %}
+                        <div style="margin-top: 8px;">
+                            <a href="tel:{{ accommodation.phone }}" class="btn sm primary">📞 Call Host ({{ accommodation.phone }})</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- LIVE MOUNTAIN WEATHER WIDGET -->
+    {% if weather %}
+        <div class="weather-widget">
+            <div class="weather-header">
+                <h3>🌦️ Forecast for {{ destination.name }} During Your Travel Window</h3>
+                <span class="weather-live-tag">
+                    {{ '🟢 Live Mountain Feed' if weather.is_live else '🟡 Seasonal Mountain Feed' }}
+                </span>
+            </div>
+
+            <div class="weather-current" style="margin-bottom: 14px;">
+                <div class="weather-temp-main">
+                    <span class="weather-icon-large">{{ weather.current.icon }}</span>
+                    <div>
+                        <div class="temp-degree">{{ weather.current.temperature }}°C</div>
+                        <div class="weather-condition-text">{{ weather.current.condition }}</div>
+                    </div>
+                </div>
+                <div class="weather-details-grid">
+                    <div class="weather-metric">
+                        <span>Feels Like</span>
+                        <strong>{{ weather.current.apparent_temperature }}°C</strong>
+                    </div>
+                    <div class="weather-metric">
+                        <span>Humidity</span>
+                        <strong>{{ weather.current.humidity }}%</strong>
+                    </div>
+                    <div class="weather-metric">
+                        <span>Ridge Wind</span>
+                        <strong>{{ weather.current.wind_speed }} km/h</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5-day / 7-day strip -->
+            <div class="weather-daily-strip">
+                {% for day in weather.daily %}
+                    <div class="weather-day-card">
+                        <div class="day-title">{{ day.day_name }}</div>
+                        <div style="font-size: 0.7rem; color: rgba(255,255,255,0.75);">{{ day.full_date }}</div>
+                        <div class="day-icon">{{ day.icon }}</div>
+                        <div class="day-temps">{{ day.temp_max }}° / {{ day.temp_min }}°</div>
+                        <div class="day-precip">💧 {{ day.precipitation_prob }}%</div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if weather.advisories %}
+                <div class="weather-advisory-box" style="margin-top: 14px;">
+                    <strong>🏔️ Expedition Safety Advisory:</strong>
+                    <ul>
+                        {% for adv in weather.advisories %}
+                            <li>{{ adv }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- MAP CONTAINER -->
+    <div class="map-container-wrap" style="margin-bottom: 32px;">
+        <div class="map-controls-bar">
+            <strong>🗺️ Destination & Stay Location Map</strong>
+            <span style="font-size: 0.85rem; color: var(--muted);">Interactive pin overview</span>
+        </div>
+        <div id="itinerary-map" class="map-view-box" style="height: 360px;"></div>
+    </div>
+
+    <!-- DAY-BY-DAY SCHEDULE -->
+    <div class="section-header">
+        <h2>Day-by-Day Itinerary Schedule</h2>
+        <span style="color: var(--muted); font-size: 0.95rem;">Total {{ trip.days|length }} Days Planned</span>
+    </div>
+
+    {% if trip.days %}
+        <div class="timeline">
+            {% for day in trip.days %}
+                <article class="day-card">
+                    <div class="day-card-header">
+                        <div>
+                            <span class="tag" style="margin-bottom: 4px;">Day {{ day.day_number }}</span>
+                            <h3 style="margin-top: 2px;">{{ day.title }}</h3>
+                        </div>
+                        <span class="pill">📅 {{ day.date }}</span>
+                    </div>
+
+                    {% if day.notes %}
+                        <div style="background: #f8fafc; border-left: 3px solid var(--primary); padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 0.92rem; color: var(--muted);">
+                            💡 <strong>Route Notes & Tips:</strong> {{ day.notes }}
+                        </div>
+                    {% endif %}
+
+                    {% if day.activities %}
+                        <div style="margin-top: 12px;">
+                            <strong style="font-size: 0.88rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 8px;">Scheduled Activities:</strong>
+                            {% for act in day.activities %}
+                                <div class="activity-item">
+                                    <div class="activity-main">
+                                        <strong>🚩 {{ act.custom_name or act.activity_name }}</strong>
+                                        <div class="activity-sub">
+                                            {% if act.start_time %}⏱️ Start: {{ act.start_time }} • {% endif %}
+                                            {% if act.duration %}Duration: {{ act.duration }} • {% endif %}
+                                            {{ act.notes or 'Scheduled stop' }}
+                                        </div>
+                                    </div>
+                                    <div class="activity-cost">
+                                        {% if act.estimated_cost and act.estimated_cost > 0 %}
+                                            ₹{{ '{:,.0f}'.format(act.estimated_cost) }}
+                                        {% else %}
+                                            <span style="color: var(--success); font-size: 0.85rem;">Free / Included</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p style="color: var(--muted); font-size: 0.9rem;">No specific activities scheduled for this day. Free time for acclimatization and rest.</p>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="day-card" style="text-align: center; padding: 30px;">
+            <p style="color: var(--muted);">No daily schedule found. Click "Edit Itinerary" to generate days.</p>
+        </div>
+    {% endif %}
+
+    <!-- Danger Zone: Delete -->
+    <div style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: flex-end;">
+        <form method="post" action="{{ url_for('delete_itinerary', itinerary_id=trip.id) }}" data-loading onsubmit="return confirm('Permanently delete this itinerary? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn danger sm" type="submit">🗑️ Delete Itinerary</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dest = {{ destination|tojson }};
+        const acc = {{ (accommodation or {})|tojson }};
+        
+        const mapData = {
+            destination: dest,
+            accommodations: acc && acc.id ? [acc] : [],
+            activities: []
+        };
+
+        if (window.HimalayanMap) {
+            window.HimalayanMap.initDestinationMap('itinerary-map', mapData);
+        }
+    });
+</script>
+{% endblock %}

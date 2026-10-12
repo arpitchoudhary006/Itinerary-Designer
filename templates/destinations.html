@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Destinations & Interactive Himalayan Map | Himalayan Travel Designer{% endblock %}
+
+{% block content %}
+<section class="section" style="margin-top: 10px;">
+    <div class="section-header">
+        <div>
+            <h1>Himalayan Destinations Catalog</h1>
+            <p style="color: var(--muted); font-size: 1.05rem;">
+                Browse iconic mountain destinations across Uttarakhand and Himachal Pradesh with live weather forecasts and authentic homestay options.
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('new_itinerary') }}" class="btn primary">➕ Plan a Custom Trip</a>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <form method="get" action="{{ url_for('destinations') }}" style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;" role="search">
+        <input type="search" name="q" value="{{ search }}" maxlength="100" placeholder="Search by name, state (Uttarakhand / Himachal), or trek name..." aria-label="Search destinations" style="flex: 1; min-width: 260px; padding: 12px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); font: inherit;">
+        <button class="btn primary" type="submit">🔍 Search Catalog</button>
+        {% if search %}
+            <a href="{{ url_for('destinations') }}" class="btn">Clear Filter</a>
+        {% endif %}
+    </form>
+
+    <!-- Himalayan Interactive Explorer Map -->
+    <div class="map-container-wrap">
+        <div class="map-controls-bar">
+            <div>
+                <strong>🗺️ Himalayan Regional Explorer Map</strong>
+                <span style="font-size: 0.85rem; color: var(--muted); margin-left: 8px;">Click any peak pin to preview elevation and stays</span>
+            </div>
+        </div>
+        <div id="explorer-map" class="map-view-box tall"></div>
+    </div>
+
+    <!-- Destination Cards Grid -->
+    <div class="section-header" style="margin-top: 36px;">
+        <h2>Explore Destinations ({{ destinations|length }})</h2>
+        {% if search %}
+            <span style="color: var(--muted); font-size: 0.9rem;">Showing results for “{{ search }}”</span>
+        {% endif %}
+    </div>
+
+    {% if destinations %}
+        <div class="grid dest-grid">
+            {% for dest in destinations %}
+                <article class="card">
+                    <div class="card-img-wrap">
+                        {% if dest.image_url %}
+                            <img src="{{ dest.image_url }}" alt="{{ dest.name }}" loading="lazy">
+                        {% endif %}
+                        <span class="card-badge tag">{{ dest.state or 'Himalayas' }}</span>
+                    </div>
+                    <div class="card-body">
+                        <h3>{{ dest.name }}</h3>
+                        <p>{{ dest.description }}</p>
+                        
+                        <div style="font-size: 0.82rem; color: var(--muted); margin-bottom: 12px; display: grid; gap: 4px;">
+                            <div>⏱️ <strong>Typical Stay:</strong> {{ dest.duration or 'Flexible' }}</div>
+                            <div>🏔️ <strong>Elevation:</strong> {{ dest.elevation or 'High Altitude' }}</div>
+                            <div>🧗 <strong>Difficulty:</strong> {{ dest.difficulty or 'Moderate' }}</div>
+                        </div>
+
+                        <div class="card-meta">
+                            <span style="font-size: 0.85rem; color: var(--primary-dark); font-weight: 800;">
+                                ₹{{ '{:,.0f}'.format(dest.estimated_budget or 0) }} est.
+                            </span>
+                            <div style="display: flex; gap: 6px;">
+                                <a class="btn sm primary" href="{{ url_for('destination_detail', slug=dest.slug) }}">Guide & Stays</a>
+                                <a class="btn sm" href="{{ url_for('new_itinerary', destination=dest.id) }}" title="Plan Trip">Plan</a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="day-card" style="text-align: center; padding: 40px 20px;">
+            <h3>No destinations found matching “{{ search }}”</h3>
+            <p style="color: var(--muted); margin: 8px 0 16px;">Try searching for "Uttarakhand", "Himachal", "Trek", or "Chopta".</p>
+            <a href="{{ url_for('destinations') }}" class="btn primary">View All Destinations</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const destinationsData = {{ destinations|tojson }};
+        if (window.HimalayanMap && destinationsData) {
+            window.HimalayanMap.initExplorerMap('explorer-map', destinationsData);
+        }
+    });
+</script>
+{% endblock %}
