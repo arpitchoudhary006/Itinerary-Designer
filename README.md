@@ -1,2 +1,0 @@
-# Itinerary-Designer
-travel helpers
