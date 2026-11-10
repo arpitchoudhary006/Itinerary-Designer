@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Himalayan Travel Itinerary Designer{% endblock %}</title>
+    <title>{% block title %}Itinerary Designer{% endblock %}</title>
     
     <!-- Google Fonts & Leaflet CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,10 +19,10 @@
     <!-- Main Sticky Navigation -->
     <nav class="topbar">
         <a href="{{ url_for('home') }}" class="brand">
-            <span class="brand-icon">🏔️</span>
+            <span class="brand-icon">🗺️</span>
             <div>
-                <span>Himalayan Itinerary Designer</span>
-                <span class="brand-sub">Treks • Stays • Weather • Maps</span>
+                <span>Itinerary Designer</span>
+                <span class="brand-sub">Destinations • Hotels • Sightseeing • Maps</span>
             </div>
         </a>
         
@@ -34,7 +34,7 @@
                 <a href="{{ url_for('saved_destinations') }}">Saved Places</a>
                 <a href="{{ url_for('preferences') }}">Preferences</a>
                 {% if current_user.is_admin %}
-                    <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+                    <a href="{{ url_for('admin_dashboard') }}" style="color: var(--accent); font-weight: 700;">⚙️ Admin Panel</a>
                 {% endif %}
                 <span class="user-badge">👤 {{ current_user.name }}</span>
                 <form method="post" action="{{ url_for('logout') }}" style="display:inline; margin:0;">
@@ -69,8 +69,8 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p><strong>Himalayan Travel Itinerary Designer</strong> — Precision trip planning, mountain weather forecasting, verified hotels & homestays, and interactive topographic maps.</p>
-        <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;">Covering Garhwal, Kumaon, Dhauladhar, and Pir Panjal Himalayan Ranges.</p>
+        <p><strong>Itinerary Designer</strong> — Precision trip planning, mountain weather forecasting, verified hotels, nearby tourist attractions, and interactive maps.</p>
+        <p style="margin-top: 6px; font-size: 0.8rem; color: #94a3b8;">Crafting unforgettable journeys with seamless itinerary scheduling and direct hotel booking.</p>
     </footer>
 
     <!-- Leaflet JS & App Scripts -->

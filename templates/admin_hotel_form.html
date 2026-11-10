@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}{{ heading }} | Itinerary Designer Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="max-width: 860px; margin: 10px auto;">
+    <div class="section-header">
+        <div>
+            <span class="tag" style="background: #fee2e2; color: #991b1b; margin-bottom: 6px;">Hotel Management</span>
+            <h1>{{ heading }}</h1>
+            <p style="color: var(--muted); font-size: 1rem;">
+                Manage hotel properties, pricing, categories, addresses, facilities, and destination assignments.
+            </p>
+        </div>
+        <a href="{{ url_for('admin_dashboard', tab='hotels') }}" class="btn sm">← Back to Hotels</a>
+    </div>
+
+    <div class="form-shell">
+        <form method="post" action="{{ action }}" class="grid" data-loading>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="form-grid">
+                <!-- Hotel Name -->
+                <label class="field">
+                    <span>Hotel / Stay Name *</span>
+                    <input type="text" name="name" maxlength="120" value="{{ hotel.get('name', '') }}" placeholder="e.g. Grand Himalayan Alpine Resort" required>
+                </label>
+
+                <!-- Assigned Destination -->
+                <label class="field">
+                    <span>Assign Destination *</span>
+                    <select name="destination_id" required>
+                        <option value="">-- Choose Destination --</option>
+                        {% for dest in destinations %}
+                            <option value="{{ dest.id }}" {% if hotel.get('destination_id')|string == dest.id|string %}selected{% endif %}>
+                                {{ dest.name }} ({{ dest.state }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <!-- Type -->
+                <label class="field">
+                    <span>Stay Type *</span>
+                    <select name="type" required>
+                        <option value="Hotel" {% if hotel.get('type') == 'Hotel' %}selected{% endif %}>Hotel</option>
+                        <option value="Homestay" {% if hotel.get('type') == 'Homestay' %}selected{% endif %}>Homestay</option>
+                        <option value="Eco Camp" {% if hotel.get('type') == 'Eco Camp' %}selected{% endif %}>Eco Camp / Resort</option>
+                    </select>
+                </label>
+
+                <!-- Category -->
+                <label class="field">
+                    <span>Category *</span>
+                    <select name="category" required>
+                        <option value="Budget" {% if hotel.get('category') == 'Budget' %}selected{% endif %}>Budget</option>
+                        <option value="Standard" {% if hotel.get('category') == 'Standard' or not hotel.get('category') %}selected{% endif %}>Standard</option>
+                        <option value="Luxury" {% if hotel.get('category') == 'Luxury' %}selected{% endif %}>Luxury</option>
+                    </select>
+                </label>
+
+                <!-- Price Per Night -->
+                <label class="field">
+                    <span>Price Per Night (INR) *</span>
+                    <input type="number" name="price_per_night" min="0" step="any" value="{{ hotel.get('price_per_night', 2500)|int if hotel.get('price_per_night') is not none else 2500 }}" required>
+                </label>
+
+                <!-- Rating -->
+                <label class="field">
+                    <span>Rating (1.0 to 5.0) *</span>
+                    <input type="number" step="0.1" min="1.0" max="5.0" name="rating" value="{{ hotel.get('rating', 4.5) }}" required>
+                </label>
+
+                <!-- Availability -->
+                <label class="field">
+                    <span>Availability Status *</span>
+                    <select name="is_available">
+                        <option value="1" {% if hotel.get('is_available', 1) == 1 %}selected{% endif %}>Available for Booking</option>
+                        <option value="0" {% if hotel.get('is_available', 1) == 0 %}selected{% endif %}>Currently Unavailable / Full</option>
+                    </select>
+                </label>
+
+                <!-- Contact Phone -->
+                <label class="field">
+                    <span>Contact Phone / Host Mobile</span>
+                    <input type="text" name="phone" maxlength="30" value="{{ hotel.get('phone', '') }}" placeholder="e.g. +91 98160 12345">
+                </label>
+
+                <!-- Full Address / Distance -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Full Address & Distance</span>
+                    <input type="text" name="address" maxlength="250" value="{{ hotel.get('address', hotel.get('distance', '')) }}" placeholder="e.g. Mall Road, Near Circuit House (0.5 km from center)">
+                </label>
+
+                <!-- Facilities / Amenities -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Facilities & Amenities (Separated by • bullet or comma)</span>
+                    <input type="text" name="amenities" maxlength="300" value="{{ hotel.get('amenities', '') }}" placeholder="e.g. Free Wi-Fi • Mountain View • Hot Water • Restaurant • Parking">
+                </label>
+
+                <!-- Image URL -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Hotel Image URL or Path</span>
+                    <input type="text" name="image_url" maxlength="500" value="{{ hotel.get('image_url', '') }}" placeholder="e.g. /static/images/destinations/triund_ridge.jpg or https://images.unsplash.com/...">
+                </label>
+
+                <!-- Booking URL -->
+                <label class="field">
+                    <span>Direct Booking / Website Link</span>
+                    <input type="url" name="booking_url" maxlength="300" value="{{ hotel.get('booking_url', '') }}" placeholder="https://example.com/hotel-booking">
+                </label>
+
+                <!-- Reviews Count -->
+                <label class="field">
+                    <span>Reviews Count</span>
+                    <input type="number" name="reviews_count" min="0" value="{{ hotel.get('reviews_count', 45) }}">
+                </label>
+
+                <!-- Description -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Description & Guest Information *</span>
+                    <textarea name="description" rows="4" maxlength="1500" required placeholder="Describe hotel atmosphere, mountain view, dining options, and guest services...">{{ hotel.get('description', '') }}</textarea>
+                </label>
+            </div>
+
+            <div class="cta-row" style="margin-top: 24px;">
+                <button class="btn accent" type="submit" style="padding: 12px 28px;">💾 Save Hotel Information</button>
+                <a href="{{ url_for('admin_dashboard', tab='hotels') }}" class="btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

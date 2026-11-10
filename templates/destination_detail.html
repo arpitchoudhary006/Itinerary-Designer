@@ -1,27 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}{{ destination.name }} — Guide, Hotels, Homestays & Weather | Himalayan Travel Designer{% endblock %}
+{% block title %}{{ destination.name }} — Guide, Hotels, Nearby Attractions & Weather | Itinerary Designer{% endblock %}
 
 {% block content %}
 <!-- Destination Hero Banner -->
 <section class="hero" style="background: linear-gradient(135deg, rgba(15, 118, 110, 0.95), rgba(19, 78, 74, 0.9)), url('{{ destination.image_url or (images[0].image_url if images else '') }}') center/cover;">
     <div style="max-width: 840px;">
-        <span class="tag" style="background: rgba(255,255,255,0.22); color: #fff; margin-bottom: 12px;">{{ destination.state or 'Himalayas' }}</span>
-        <h1 style="font-size: clamp(2.2rem, 4vw, 3.4rem); margin-bottom: 12px;">{{ destination.name }}</h1>
+        <span class="tag" style="background: rgba(255,255,255,0.22); color: #fff; margin-bottom: 12px;">{{ destination.state or 'Destination' }}</span>
+        <h1 style="font-size: clamp(2.2rem, 4vw, 3.4rem); margin-bottom: 8px;">{{ destination.name }}</h1>
+        {% if destination.address %}
+            <p style="font-size: 0.98rem; opacity: 0.9; margin-bottom: 8px;">📍 <strong>Location / Address:</strong> {{ destination.address }}</p>
+        {% endif %}
         <p>{{ destination.description }}</p>
 
         <div class="hero-stats">
             <div class="hero-stat-card">
-                <strong>{{ destination.elevation or 'High Altitude' }}</strong>
-                <span>Elevation</span>
+                <strong>{{ destination.sightseeing_time or '4-5 hours' }}</strong>
+                <span>Est. Sightseeing Time</span>
             </div>
             <div class="hero-stat-card">
-                <strong>{{ destination.difficulty or 'Moderate' }}</strong>
-                <span>Difficulty</span>
+                <strong>{{ destination.best_time or 'All year round' }}</strong>
+                <span>Best Time to Visit</span>
             </div>
             <div class="hero-stat-card">
-                <strong>{{ destination.duration or 'Flexible' }}</strong>
-                <span>Typical Duration</span>
+                <strong>{{ destination.elevation or 'Scenic Valley' }}</strong>
+                <span>Elevation / Terrain</span>
             </div>
             <div class="hero-stat-card">
                 <strong>₹{{ '{:,.0f}'.format(destination.estimated_budget or 0) }}</strong>
@@ -45,8 +48,9 @@
                 <a class="btn ghost" href="{{ url_for('login') }}">Sign In to Bookmark</a>
             {% endif %}
             
+            <a class="btn ghost" href="#nearby-section">📍 Nearby Attractions ({{ nearby_places|length }})</a>
+            <a class="btn ghost" href="#stays-section">🏨 Hotels & Stays ({{ accommodations|length }})</a>
             <a class="btn ghost" href="#weather-section">🌦️ Weather</a>
-            <a class="btn ghost" href="#stays-section">🏡 Hotels & Homestays ({{ accommodations|length }})</a>
             <a class="btn ghost" href="#map-section">🗺️ Interactive Map</a>
         </div>
     </div>
@@ -147,43 +151,121 @@
     </div>
 </section>
 
+<!-- NEARBY VISITING PLACES AND TOURIST ATTRACTIONS -->
+<section id="nearby-section" class="section">
+    <div class="section-header">
+        <div>
+            <span class="tag" style="background: var(--primary-light); color: var(--primary-dark); margin-bottom: 6px;">Nearby Attractions</span>
+            <h2>Nearby Visiting Places & Tourist Highlights</h2>
+            <p style="color: var(--muted); font-size: 0.95rem;">
+                Explore popular spots and landmarks around {{ destination.name }} with estimated visiting times and distances.
+            </p>
+        </div>
+    </div>
+
+    {% if nearby_places %}
+        <div class="grid dest-grid">
+            {% for place in nearby_places %}
+                <article class="card" style="display:flex; flex-direction:column; overflow:hidden;">
+                    <div style="height: 190px; width:100%; position:relative; overflow:hidden; background: var(--border);">
+                        {% if place.image_url %}
+                            <img src="{{ place.image_url }}" alt="{{ place.name }}" style="width:100%; height:100%; object-fit:cover;" loading="lazy">
+                        {% else %}
+                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e2e8f0; color:#64748b; font-size:2rem;">📍</div>
+                        {% endif %}
+                        <div style="position:absolute; top:12px; right:12px; background:rgba(15, 23, 42, 0.85); color:#fff; padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:700;">
+                            ⏱️ {{ place.visiting_time or '1-2 hours' }}
+                        </div>
+                    </div>
+
+                    <div class="card-body" style="display:flex; flex-direction:column; flex:1; padding: 18px;">
+                        <h3 style="font-size: 1.22rem; margin-bottom: 6px;">{{ place.name }}</h3>
+                        
+                        <div style="font-size: 0.86rem; color: var(--muted); margin-bottom: 10px; display:flex; flex-direction:column; gap:4px;">
+                            <span>📍 <strong>Location:</strong> {{ place.location or destination.name }}</span>
+                            {% if place.distance %}
+                                <span>📏 <strong>Distance:</strong> {{ place.distance }}</span>
+                            {% endif %}
+                            {% if place.best_time %}
+                                <span>🌤️ <strong>Best Time:</strong> {{ place.best_time }}</span>
+                            {% endif %}
+                        </div>
+
+                        <p style="font-size: 0.9rem; color: var(--text); flex:1; margin-bottom: 14px;">
+                            {{ place.description }}
+                        </p>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid var(--border); font-size:0.86rem;">
+                            <span style="font-weight:700; color:var(--primary-dark);">
+                                🎟️ Entry: {% if place.entry_fee and place.entry_fee > 0 %}₹{{ '{:,.0f}'.format(place.entry_fee) }}{% else %}Free Entry{% endif %}
+                            </span>
+                            <span style="font-size:0.82rem; color:var(--muted);">
+                                Est. {{ place.visiting_time or '1-2 hrs' }}
+                            </span>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="day-card" style="text-align: center; padding: 32px;">
+            <p style="color: var(--muted);">No nearby visiting places added yet for {{ destination.name }}. The administrator can add attractions anytime.</p>
+        </div>
+    {% endif %}
+</section>
+
 <!-- NEARBY HOTELS & HOMESTAYS SECTION -->
 <section id="stays-section" class="section">
     <div class="section-header">
         <div>
-            <h2>Nearby Hotels, Homestays & Alpine Camps</h2>
+            <h2>Hotels, Homestays & Resorts</h2>
             <p style="color: var(--muted); font-size: 0.95rem;">
-                Handpicked and verified accommodations close to {{ destination.name }} with direct contact info and local dining options.
+                Verified accommodations directly managed in {{ destination.name }} with category tags, pricing, and amenities.
             </p>
         </div>
         <div class="cta-row">
             <button type="button" class="btn sm active" onclick="filterStays('all')" id="tab-all">All Stays ({{ accommodations|length }})</button>
-            <button type="button" class="btn sm" onclick="filterStays('Homestay')" id="tab-homestay">Homestays</button>
-            <button type="button" class="btn sm" onclick="filterStays('Hotel')" id="tab-hotel">Hotels</button>
-            <button type="button" class="btn sm" onclick="filterStays('Eco Camp')" id="tab-camp">Eco Camps</button>
+            <button type="button" class="btn sm" onclick="filterStays('Budget')" id="tab-budget">Budget</button>
+            <button type="button" class="btn sm" onclick="filterStays('Standard')" id="tab-standard">Standard</button>
+            <button type="button" class="btn sm" onclick="filterStays('Luxury')" id="tab-luxury">Luxury</button>
         </div>
     </div>
 
     {% if accommodations %}
         <div class="grid hotel-grid" id="accommodations-container">
             {% for acc in accommodations %}
-                <article class="hotel-card" data-stay-type="{{ acc.type }}">
+                <article class="hotel-card" data-stay-type="{{ acc.type }}" data-category="{{ acc.category or 'Standard' }}">
                     <div class="hotel-card-image">
                         {% if acc.image_url %}
                             <img src="{{ acc.image_url }}" alt="{{ acc.name }}" loading="lazy">
+                        {% else %}
+                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e2e8f0; color:#64748b; font-size:2.5rem;">🏨</div>
                         {% endif %}
-                        <span class="hotel-type-badge tag {{ 'homestay' if 'Home' in acc.type else ('camp' if 'Camp' in acc.type else 'hotel') }}">
-                            {{ acc.type }}
-                        </span>
+                        <div style="position:absolute; top:10px; left:10px; display:flex; gap:6px;">
+                            <span class="hotel-type-badge tag {{ 'homestay' if 'Home' in acc.type else ('camp' if 'Camp' in acc.type else 'hotel') }}" style="position:static;">
+                                {{ acc.type }}
+                            </span>
+                            <span class="tag" style="position:static; background:rgba(0,0,0,0.7); color:#fff;">
+                                {{ acc.category or 'Standard' }}
+                            </span>
+                        </div>
                         <div class="hotel-price-badge">
                             ₹{{ '{:,.0f}'.format(acc.price_per_night) }} <span style="font-size: 0.72rem; font-weight: normal;">/ night</span>
                         </div>
                     </div>
 
                     <div class="hotel-card-content">
-                        <h3>{{ acc.name }}</h3>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                            <h3>{{ acc.name }}</h3>
+                            {% if acc.is_available == 0 %}
+                                <span class="tag" style="background:#fee2e2; color:#991b1b; font-size:0.75rem;">Unavailable</span>
+                            {% else %}
+                                <span class="tag" style="background:#dcfce7; color:#166534; font-size:0.75rem;">Available</span>
+                            {% endif %}
+                        </div>
+
                         <div class="hotel-distance">
-                            📍 {{ acc.distance or 'Close to destination trailhead' }}
+                            📍 {{ acc.address or acc.distance or 'Close to destination center' }}
                         </div>
 
                         <div class="hotel-rating-row">
@@ -358,15 +440,18 @@
         }
     });
 
-    // Stay Filtering Function
-    function filterStays(type) {
+    // Stay Filtering Function (Category or Type)
+    function filterStays(val) {
         document.querySelectorAll('#stays-section .cta-row .btn').forEach(b => b.classList.remove('active', 'primary'));
         const container = document.getElementById('accommodations-container');
+        if (!container) return;
         const cards = container.querySelectorAll('.hotel-card');
         
         cards.forEach(card => {
-            const stayType = card.dataset.stayType || '';
-            if (type === 'all' || stayType.toLowerCase().includes(type.toLowerCase())) {
+            const stayType = (card.dataset.stayType || '').toLowerCase();
+            const category = (card.dataset.category || '').toLowerCase();
+            const target = val.toLowerCase();
+            if (val === 'all' || stayType.includes(target) || category === target) {
                 card.style.display = 'flex';
             } else {
                 card.style.display = 'none';

@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard | Himalayan Travel Itinerary Designer{% endblock %}
+{% block title %}Dashboard | Itinerary Designer{% endblock %}
 
 {% block content %}
 <section class="hero" style="padding: 36px 32px;">
     <div style="max-width: 800px;">
         <span class="tag" style="background: rgba(255,255,255,0.22); color:#fff; margin-bottom: 12px;">Traveler Dashboard</span>
         <h1 style="font-size: 2.4rem; margin-bottom: 8px;">Welcome back, {{ current_user.name }}!</h1>
-        <p style="font-size: 1.05rem; margin-bottom: 20px;">Ready to explore snow-capped peaks and serene valleys? Manage your saved itineraries, discover nearby homestays, or map out your next trek.</p>
+        <p style="font-size: 1.05rem; margin-bottom: 20px;">Ready to explore inspiring travel destinations? Manage your saved itineraries, discover nearby hotels, or map out your next sightseeing adventure.</p>
         
         <div class="cta-row">
             <a class="btn accent" href="{{ url_for('new_itinerary') }}">➕ Plan a New Journey</a>
@@ -36,7 +36,7 @@
 <section class="section">
     <div class="section-header">
         <div>
-            <h2>My Recent Himalayan Trips</h2>
+            <h2>My Recent Trips</h2>
             <p style="color: var(--muted); font-size: 0.95rem;">Private itineraries created and tailored by you.</p>
         </div>
         {% if itineraries %}

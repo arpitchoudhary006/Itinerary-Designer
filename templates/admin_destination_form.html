@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ heading }} | Itinerary Designer Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="max-width: 860px; margin: 10px auto;">
+    <div class="section-header">
+        <div>
+            <span class="tag" style="background: #fee2e2; color: #991b1b; margin-bottom: 6px;">Admin Management</span>
+            <h1>{{ heading }}</h1>
+            <p style="color: var(--muted); font-size: 1rem;">
+                Configure destination information, locations, estimated sightseeing time, and weather guidelines.
+            </p>
+        </div>
+        <a href="{{ url_for('admin_dashboard', tab='destinations') }}" class="btn sm">← Back to Destinations</a>
+    </div>
+
+    <div class="form-shell">
+        <form method="post" action="{{ action }}" class="grid" data-loading>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="form-grid">
+                <!-- Name -->
+                <label class="field">
+                    <span>Destination Name *</span>
+                    <input type="text" name="name" maxlength="100" value="{{ dest.get('name', '') }}" placeholder="e.g. Manali & Solang Valley" required>
+                </label>
+
+                <!-- Slug -->
+                <label class="field">
+                    <span>URL Slug (unique, lowercase with hyphens) *</span>
+                    <input type="text" name="slug" maxlength="80" value="{{ dest.get('slug', '') }}" placeholder="e.g. manali-solang-valley" required>
+                </label>
+
+                <!-- State / Region -->
+                <label class="field">
+                    <span>State / Region *</span>
+                    <input type="text" name="state" maxlength="60" value="{{ dest.get('state', '') }}" placeholder="e.g. Himachal Pradesh / Uttarakhand" required>
+                </label>
+
+                <!-- Location / Address -->
+                <label class="field">
+                    <span>Location / Full Address</span>
+                    <input type="text" name="address" maxlength="200" value="{{ dest.get('address', '') }}" placeholder="e.g. Kullu District, Himachal Pradesh 175131">
+                </label>
+
+                <!-- Estimated Sightseeing Time -->
+                <label class="field">
+                    <span>Estimated Sightseeing Time *</span>
+                    <input type="text" name="sightseeing_time" maxlength="40" value="{{ dest.get('sightseeing_time', '4-5 hours') }}" placeholder="e.g. 4-5 hours / Full Day" required>
+                </label>
+
+                <!-- Best Time to Visit -->
+                <label class="field">
+                    <span>Best Time to Visit</span>
+                    <input type="text" name="best_time" maxlength="100" value="{{ dest.get('best_time', '') }}" placeholder="e.g. April to June, October to December">
+                </label>
+
+                <!-- Weather Information -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Weather Information</span>
+                    <input type="text" name="weather_info" maxlength="250" value="{{ dest.get('weather_info', '') }}" placeholder="e.g. Pleasant in summer (15°C to 25°C); heavy snowfall in winter.">
+                </label>
+
+                <!-- Primary Image URL -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Image URL or Static Path</span>
+                    <input type="text" name="image_url" maxlength="500" value="{{ dest.get('image_url', '') }}" placeholder="e.g. /static/images/destinations/triund_ridge.jpg or https://images.unsplash.com/...">
+                </label>
+
+                <!-- Estimated Budget -->
+                <label class="field">
+                    <span>Estimated Budget (INR)</span>
+                    <input type="number" name="estimated_budget" min="0" step="any" value="{{ dest.get('estimated_budget', 12000)|int if dest.get('estimated_budget') is not none else 12000 }}">
+                </label>
+
+                <!-- Elevation / Terrain -->
+                <label class="field">
+                    <span>Elevation / Terrain</span>
+                    <input type="text" name="elevation" maxlength="50" value="{{ dest.get('elevation', '') }}" placeholder="e.g. 2,050 m / Alpine Valley">
+                </label>
+
+                <!-- Latitude -->
+                <label class="field">
+                    <span>Latitude (for Map & Live Weather)</span>
+                    <input type="number" step="0.0001" name="latitude" value="{{ dest.get('latitude', 32.2432) }}">
+                </label>
+
+                <!-- Longitude -->
+                <label class="field">
+                    <span>Longitude (for Map & Live Weather)</span>
+                    <input type="number" step="0.0001" name="longitude" value="{{ dest.get('longitude', 77.1892) }}">
+                </label>
+
+                <!-- Description -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Detailed Destination Description *</span>
+                    <textarea name="description" rows="5" maxlength="2000" required placeholder="Describe highlights, cultural heritage, viewpoints, and terrain...">{{ dest.get('description', '') }}</textarea>
+                </label>
+            </div>
+
+            <div class="cta-row" style="margin-top: 24px;">
+                <button class="btn accent" type="submit" style="padding: 12px 28px;">💾 Save Destination</button>
+                <a href="{{ url_for('admin_dashboard', tab='destinations') }}" class="btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

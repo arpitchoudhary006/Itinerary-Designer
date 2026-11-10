@@ -191,6 +191,21 @@ CREATE TABLE IF NOT EXISTS user_notes (
     note_text TEXT NOT NULL,
     created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS nearby_places (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    destination_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    location TEXT,
+    image_url TEXT,
+    visiting_time TEXT,
+    distance TEXT,
+    entry_fee REAL DEFAULT 0,
+    best_time TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY(destination_id) REFERENCES destinations(id) ON DELETE CASCADE
+);
 """
 
 
@@ -205,6 +220,25 @@ def init_db():
     db = get_db()
     try:
         db.executescript(SQL_SCHEMA)
+        # Safe schema migrations for existing SQLite databases
+        # 1. Check accommodations table for category, availability, address
+        existing_acc_cols = {col[1] for col in db.execute("PRAGMA table_info(accommodations)").fetchall()}
+        if "category" not in existing_acc_cols:
+            db.execute("ALTER TABLE accommodations ADD COLUMN category TEXT DEFAULT 'Standard'")
+        if "is_available" not in existing_acc_cols:
+            db.execute("ALTER TABLE accommodations ADD COLUMN is_available INTEGER DEFAULT 1")
+        if "address" not in existing_acc_cols:
+            db.execute("ALTER TABLE accommodations ADD COLUMN address TEXT")
+
+        # 2. Check destinations table for address, sightseeing_time, weather_info
+        existing_dest_cols = {col[1] for col in db.execute("PRAGMA table_info(destinations)").fetchall()}
+        if "address" not in existing_dest_cols:
+            db.execute("ALTER TABLE destinations ADD COLUMN address TEXT")
+        if "sightseeing_time" not in existing_dest_cols:
+            db.execute("ALTER TABLE destinations ADD COLUMN sightseeing_time TEXT DEFAULT '4-5 hours'")
+        if "weather_info" not in existing_dest_cols:
+            db.execute("ALTER TABLE destinations ADD COLUMN weather_info TEXT")
+
         db.commit()
     finally:
         db.close()
@@ -216,3 +250,4 @@ def now_iso():
 
 def row_to_dict(row):
     return dict(row) if row else None
+

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ heading }} | Himalayan Travel Designer{% endblock %}
+{% block title %}{{ heading }} | Itinerary Designer{% endblock %}
 
 {% block content %}
 <section class="section" style="max-width: 900px; margin: 10px auto;">
@@ -8,7 +8,7 @@
         <div>
             <h1>{{ heading }}</h1>
             <p style="color: var(--muted); font-size: 1rem;">
-                Craft a personalized day-by-day plan with Himalayan stay selection, activity scheduling, and budget calculations.
+                Plan your destination visit with estimated sightseeing hours, nearby attractions sequence, hotel selection, and budget calculation.
             </p>
         </div>
         <a href="{{ url_for('my_itineraries') }}" class="btn sm">Back to My Trips</a>
@@ -17,20 +17,22 @@
     <div class="form-shell">
         <form method="post" action="{{ action }}" class="grid" data-loading id="itinerary-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="start_date" value="{{ trip.get('start_date', today) }}">
+            <input type="hidden" name="end_date" value="{{ trip.get('end_date', default_end) }}">
 
             <div class="form-grid">
                 <!-- Trip Name -->
                 <label class="field" style="grid-column: 1 / -1;">
                     <span>Trip Title</span>
-                    <input name="name" maxlength="100" value="{{ trip.get('name', '') }}" placeholder="e.g. Autumn Chopta & Chandrashila Expedition" required>
+                    <input name="name" maxlength="100" value="{{ trip.get('name', '') }}" placeholder="e.g. Scenic Mountain Expedition & Sightseeing" required>
                 </label>
 
                 <!-- Destination -->
                 <label class="field">
-                    <span>Himalayan Destination</span>
+                    <span>Selected Destination</span>
                     <select name="destination_id" id="destination-select" required onchange="handleDestinationChange(this.value)">
                         {% for dest in destinations %}
-                            <option value="{{ dest.id }}" {% if trip.get('destination_id')|string == dest.id|string %}selected{% endif %}>
+                            <option value="{{ dest.id }}" data-sightseeing="{{ dest.sightseeing_time or '4-5 hours' }}" {% if trip.get('destination_id')|string == dest.id|string %}selected{% endif %}>
                                 {{ dest.name }} ({{ dest.state }})
                             </option>
                         {% endfor %}
@@ -44,22 +46,10 @@
                         <option value="">-- Choose Hotel / Homestay (Optional) --</option>
                         {% for acc in all_accommodations %}
                             <option value="{{ acc.id }}" data-dest-id="{{ acc.destination_id }}" {% if trip.get('accommodation_id')|string == acc.id|string %}selected{% endif %}>
-                                [{{ acc.type }}] {{ acc.name }} — ₹{{ '{:,.0f}'.format(acc.price_per_night) }}/nt
+                                [{{ acc.type }} - {{ acc.category or 'Standard' }}] {{ acc.name }} — ₹{{ '{:,.0f}'.format(acc.price_per_night) }}/nt
                             </option>
                         {% endfor %}
                     </select>
-                </label>
-
-                <!-- Departure Date -->
-                <label class="field">
-                    <span>Departure Date</span>
-                    <input type="date" name="start_date" id="start-date" value="{{ trip.get('start_date', today) }}" required onchange="updateDates()">
-                </label>
-
-                <!-- Return Date -->
-                <label class="field">
-                    <span>Return Date</span>
-                    <input type="date" name="end_date" id="end-date" value="{{ trip.get('end_date', default_end) }}" required onchange="updateDates()">
                 </label>
 
                 <!-- Travelers -->
@@ -71,7 +61,7 @@
                 <!-- Budget -->
                 <label class="field">
                     <span>Total Budget (INR)</span>
-                    <input type="number" name="budget" min="1" max="10000000" step="100" value="{{ trip.get('budget', default_budget) }}" required>
+                    <input type="number" name="budget" min="0" max="10000000" step="any" value="{{ trip.get('budget', default_budget)|int if trip.get('budget') is not none else default_budget }}" required>
                 </label>
 
                 <!-- Travel Style -->
@@ -91,7 +81,7 @@
                     <span>Transport Preference</span>
                     <select name="transport_preference">
                         {% for opt in transports %}
-                            <option {% if trip.get('transport_preference', preferences.get('transport_preference', 'Train')) == opt %}selected{% endif %}>
+                            <option {% if trip.get('transport_preference', preferences.get('transport_preference', 'Car')) == opt %}selected{% endif %}>
                                 {{ opt }}
                             </option>
                         {% endfor %}
@@ -103,12 +93,52 @@
                     <span>Stay Preference Type</span>
                     <select name="accommodation_preference">
                         {% for opt in accommodations_opts %}
-                            <option {% if trip.get('accommodation_preference', preferences.get('accommodation_preference', 'Homestay')) == opt %}selected{% endif %}>
+                            <option {% if trip.get('accommodation_preference', preferences.get('accommodation_preference', 'Hotel')) == opt %}selected{% endif %}>
                                 {{ opt }}
                             </option>
                         {% endfor %}
                     </select>
                 </label>
+            </div>
+
+            <!-- Sightseeing & Time Estimation Panel -->
+            <div class="day-card" style="margin-top: 24px; background: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 100%); border-left: 4px solid var(--primary);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+                    <div>
+                        <h3 style="margin:0; font-size:1.25rem;">⏱️ Estimated Sightseeing Time Calculator</h3>
+                        <p style="margin:4px 0 0; color:var(--muted); font-size:0.88rem;">Select the attractions you want to explore. Total time is calculated dynamically.</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.8rem; color:var(--muted); text-transform:uppercase; font-weight:700;">Total Sightseeing Time:</span>
+                        <div id="total-time-badge" style="font-size:1.35rem; font-weight:900; color:var(--primary-dark);">4 - 5 Hours</div>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:16px;">
+                    <div style="background:#fff; padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                        <span style="font-size:0.8rem; color:var(--muted);">🏛️ Main Destination Sightseeing:</span>
+                        <div id="main-dest-time" style="font-weight:700; color:var(--text); margin-top:4px;">4 - 5 Hours</div>
+                    </div>
+                    <div style="background:#fff; padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                        <span style="font-size:0.8rem; color:var(--muted);">📍 Selected Nearby Attractions:</span>
+                        <div id="nearby-dest-time" style="font-weight:700; color:var(--text); margin-top:4px;">0 Hours</div>
+                    </div>
+                </div>
+
+                <div id="nearby-places-container" style="margin-top:10px;">
+                    <strong style="font-size:0.92rem; display:block; margin-bottom:8px;">Include Nearby Attractions in Itinerary:</strong>
+                    <div id="nearby-checkboxes" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:8px;">
+                        <!-- Dynamically filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Suggested Sequence Display -->
+                <div style="margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);">
+                    <strong style="font-size:0.88rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;">📋 Suggested Sightseeing Sequence:</strong>
+                    <ol id="sightseeing-sequence" style="margin:8px 0 0; padding-left:20px; font-size:0.92rem; line-height:1.6; color:var(--text);">
+                        <!-- Dynamically updated -->
+                    </ol>
+                </div>
             </div>
 
             <!-- If Editing, Day-by-Day Editor -->
@@ -162,33 +192,117 @@
 
 {% block extra_scripts %}
 <script>
-    function handleDestinationChange(destId) {
-        const accSelect = document.getElementById('accommodation-select');
-        if (!accSelect) return;
-        
-        let foundFirst = false;
-        Array.from(accSelect.options).forEach((opt, idx) => {
-            if (idx === 0) return; // skip default placeholder
-            const optDestId = opt.dataset.destId;
-            if (!destId || optDestId === destId) {
-                opt.style.display = 'block';
-                if (!foundFirst) {
-                    opt.selected = true;
-                    foundFirst = true;
-                }
-            } else {
-                opt.style.display = 'none';
-                if (opt.selected) opt.selected = false;
-            }
+    const allNearbyPlaces = {{ (all_nearby_places or [])|tojson }};
+
+    function parseHours(timeStr) {
+        if (!timeStr) return [1, 2];
+        const str = timeStr.toLowerCase().replace('hrs', '').replace('hours', '').replace('hour', '').trim();
+        if (str.includes('-')) {
+            const parts = str.split('-').map(p => parseFloat(p.trim())).filter(p => !isNaN(p));
+            if (parts.length >= 2) return [parts[0], parts[1]];
+            if (parts.length === 1) return [parts[0], parts[0]];
+        }
+        const val = parseFloat(str);
+        return isNaN(val) ? [1, 2] : [val, val];
+    }
+
+    function recalculateTimes() {
+        const dSelect = document.getElementById('destination-select');
+        const selectedOpt = dSelect ? dSelect.options[dSelect.selectedIndex] : null;
+        const mainTimeStr = selectedOpt ? (selectedOpt.dataset.sightseeing || '4-5 hours') : '4-5 hours';
+        const [mainMin, mainMax] = parseHours(mainTimeStr);
+
+        let nearbyMin = 0;
+        let nearbyMax = 0;
+        const selectedPlaces = [];
+
+        document.querySelectorAll('.nearby-checkbox:checked').forEach(cb => {
+            const timeStr = cb.dataset.visitingTime;
+            const name = cb.dataset.name;
+            const [minH, maxH] = parseHours(timeStr);
+            nearbyMin += minH;
+            nearbyMax += maxH;
+            selectedPlaces.push({ name, timeStr });
+        });
+
+        const totalMin = mainMin + nearbyMin;
+        const totalMax = mainMax + nearbyMax;
+
+        document.getElementById('main-dest-time').textContent = mainMin === mainMax ? `${mainMin} Hours` : `${mainMin} - ${mainMax} Hours`;
+        document.getElementById('nearby-dest-time').textContent = nearbyMin === 0 ? '0 Hours' : (nearbyMin === nearbyMax ? `${nearbyMin} Hours` : `${nearbyMin} - ${nearbyMax} Hours`);
+        document.getElementById('total-time-badge').textContent = totalMin === totalMax ? `${totalMin} Hours` : `${totalMin} - ${totalMax} Hours`;
+
+        // Update suggested sequence
+        const seqList = document.getElementById('sightseeing-sequence');
+        seqList.innerHTML = '';
+        const mainLi = document.createElement('li');
+        mainLi.innerHTML = `<strong>${selectedOpt ? selectedOpt.text.split('(')[0].trim() : 'Main Destination'} Exploration</strong> — Main Sightseeing (${mainTimeStr})`;
+        seqList.appendChild(mainLi);
+
+        selectedPlaces.forEach(p => {
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${p.name}</strong> — ${p.timeStr || '1-2 hours'}`;
+            seqList.appendChild(li);
         });
     }
 
-    function updateDates() {
-        const s = document.getElementById('start-date');
-        const e = document.getElementById('end-date');
-        if (s && e && s.value && e.value && e.value < s.value) {
-            e.value = s.value;
+    function renderNearbyPlaces(destId) {
+        const container = document.getElementById('nearby-checkboxes');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const relevant = allNearbyPlaces.filter(p => String(p.destination_id) === String(destId));
+        if (relevant.length === 0) {
+            container.innerHTML = '<span style="color:var(--muted); font-size:0.88rem;">No nearby tourist attractions added for this destination yet.</span>';
+            recalculateTimes();
+            return;
         }
+
+        relevant.forEach(p => {
+            const label = document.createElement('label');
+            label.style.display = 'flex';
+            label.style.alignItems = 'center';
+            label.style.gap = '8px';
+            label.style.background = '#fff';
+            label.style.padding = '8px 12px';
+            label.style.borderRadius = 'var(--radius-sm)';
+            label.style.border = '1px solid var(--border)';
+            label.style.cursor = 'pointer';
+            label.style.fontSize = '0.9rem';
+
+            label.innerHTML = `
+                <input type="checkbox" name="nearby_places" value="${p.id}" class="nearby-checkbox" data-name="${p.name}" data-visiting-time="${p.visiting_time || '2 hours'}" checked onchange="recalculateTimes()">
+                <div>
+                    <strong>${p.name}</strong>
+                    <div style="font-size:0.78rem; color:var(--muted);">⏱️ ${p.visiting_time || '2 hrs'} ${p.distance ? '• 📍 ' + p.distance : ''}</div>
+                </div>
+            `;
+            container.appendChild(label);
+        });
+
+        recalculateTimes();
+    }
+
+    function handleDestinationChange(destId) {
+        const accSelect = document.getElementById('accommodation-select');
+        if (accSelect) {
+            let foundFirst = false;
+            Array.from(accSelect.options).forEach((opt, idx) => {
+                if (idx === 0) return;
+                const optDestId = opt.dataset.destId;
+                if (!destId || optDestId === destId) {
+                    opt.style.display = 'block';
+                    if (!foundFirst) {
+                        opt.selected = true;
+                        foundFirst = true;
+                    }
+                } else {
+                    opt.style.display = 'none';
+                    if (opt.selected) opt.selected = false;
+                }
+            });
+        }
+        renderNearbyPlaces(destId);
     }
 
     document.addEventListener('DOMContentLoaded', function () {

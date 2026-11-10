@@ -343,6 +343,19 @@ def get_destination_activities(destination_id: int):
         db.close()
 
 
+def get_nearby_places(destination_id: int):
+    db = get_db()
+    try:
+        rows = db.execute(
+            "SELECT * FROM nearby_places WHERE destination_id = ? ORDER BY id ASC",
+            (destination_id,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        db.close()
+
+
+
 def get_destination_images(destination_id: int):
     db = get_db()
     try:
@@ -671,6 +684,7 @@ def destination_detail(slug):
     images = get_destination_images(destination["id"])
     activities = get_destination_activities(destination["id"])
     accommodations = get_accommodations(destination["id"])
+    nearby_places = get_nearby_places(destination["id"])
     reviews = fetch_reviews(destination["id"])
 
     # Live High-Altitude Weather Forecast
@@ -700,6 +714,7 @@ def destination_detail(slug):
         images=images,
         activities=activities,
         accommodations=accommodations,
+        nearby_places=nearby_places,
         reviews=reviews,
         weather=weather,
         saved=saved,
@@ -902,19 +917,27 @@ def new_itinerary():
         "name": "",
     }
     preferences = get_user_preferences(current_user.user_id)
+    
+    db = get_db()
+    try:
+        nearby_rows = db.execute("SELECT * FROM nearby_places ORDER BY destination_id, id ASC").fetchall()
+        all_nearby_places = [dict(r) for r in nearby_rows]
+    finally:
+        db.close()
 
     return render_template(
         "itinerary_form.html",
         destinations=destinations,
         all_accommodations=all_accommodations,
+        all_nearby_places=all_nearby_places,
         trip=trip_values,
         preferences=preferences,
         editing=False,
-        heading="Design a New Himalayan Itinerary",
+        heading="Design a New Itinerary",
         action=url_for("new_itinerary"),
-        submit_label="Generate Day-by-Day Itinerary",
+        submit_label="Save Itinerary & Sightseeing Plan",
         today=date.today().isoformat(),
-        default_end=(date.today() + timedelta(days=3)).isoformat(),
+        default_end=(date.today() + timedelta(days=2)).isoformat(),
         default_budget=20000,
         styles=TRAVEL_STYLES,
         transports=TRANSPORT_OPTIONS,
@@ -1031,10 +1054,18 @@ def edit_itinerary(itinerary_id):
             flash(f"Could not update itinerary: {str(e)}", "error")
 
     preferences = get_user_preferences(current_user.user_id)
+    db = get_db()
+    try:
+        nearby_rows = db.execute("SELECT * FROM nearby_places ORDER BY destination_id, id ASC").fetchall()
+        all_nearby_places = [dict(r) for r in nearby_rows]
+    finally:
+        db.close()
+
     return render_template(
         "itinerary_form.html",
         destinations=destinations,
         all_accommodations=all_accommodations,
+        all_nearby_places=all_nearby_places,
         trip=existing,
         preferences=preferences,
         editing=True,
@@ -1042,7 +1073,7 @@ def edit_itinerary(itinerary_id):
         action=url_for("edit_itinerary", itinerary_id=itinerary_id),
         submit_label="Save Changes",
         today=date.today().isoformat(),
-        default_end=(date.today() + timedelta(days=3)).isoformat(),
+        default_end=(date.today() + timedelta(days=2)).isoformat(),
         default_budget=20000,
         styles=TRAVEL_STYLES,
         transports=TRANSPORT_OPTIONS,
@@ -1190,26 +1221,450 @@ def preferences():
     )
 
 
-# 18. ADMIN TELEMETRY
+# 18. ADMINISTRATOR PANEL DASHBOARD & CRUD ROUTES
 @app.route("/admin")
 @login_required
 def admin_dashboard():
     if not current_user.is_admin:
         abort(404)
 
+    tab = request.args.get("tab", "overview")
     db = get_db()
     try:
         counts = {
             "users": db.execute("SELECT COUNT(*) FROM users").fetchone()[0],
             "destinations": db.execute("SELECT COUNT(*) FROM destinations").fetchone()[0],
             "accommodations": db.execute("SELECT COUNT(*) FROM accommodations").fetchone()[0],
+            "nearby_places": db.execute("SELECT COUNT(*) FROM nearby_places").fetchone()[0],
             "itineraries": db.execute("SELECT COUNT(*) FROM itineraries").fetchone()[0],
         }
         destinations = list_destinations()
+        
+        hotels = []
+        if tab in {"hotels", "overview"}:
+            hotel_rows = db.execute(
+                """SELECT a.*, d.name AS destination_name 
+                   FROM accommodations a 
+                   LEFT JOIN destinations d ON d.id = a.destination_id 
+                   ORDER BY d.name, a.rating DESC"""
+            ).fetchall()
+            hotels = [dict(r) for r in hotel_rows]
+
+        nearby_places = []
+        if tab in {"nearby", "overview"}:
+            place_rows = db.execute(
+                """SELECT np.*, d.name AS destination_name 
+                   FROM nearby_places np 
+                   LEFT JOIN destinations d ON d.id = np.destination_id 
+                   ORDER BY d.name, np.id ASC"""
+            ).fetchall()
+            nearby_places = [dict(r) for r in place_rows]
+
+        users = []
+        if tab == "users":
+            user_rows = db.execute("SELECT id, user_id, name, email, role, created_at FROM users ORDER BY id ASC").fetchall()
+            users = [dict(r) for r in user_rows]
     finally:
         db.close()
 
-    return render_template("admin.html", counts=counts, destinations=destinations)
+    return render_template(
+        "admin.html",
+        active_tab=tab,
+        counts=counts,
+        destinations=destinations,
+        hotels=hotels,
+        nearby_places=nearby_places,
+        users=users,
+    )
+
+
+# --- DESTINATION CRUD ---
+@app.route("/admin/destinations/add", methods=["GET", "POST"])
+@login_required
+def admin_add_destination():
+    if not current_user.is_admin:
+        abort(404)
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        slug = request.form.get("slug", "").strip().lower()
+        state = request.form.get("state", "").strip()
+        address = request.form.get("address", "").strip()
+        sightseeing_time = request.form.get("sightseeing_time", "4-5 hours").strip()
+        best_time = request.form.get("best_time", "").strip()
+        weather_info = request.form.get("weather_info", "").strip()
+        description = request.form.get("description", "").strip()
+        image_url = request.form.get("image_url", "").strip()
+        elevation = request.form.get("elevation", "").strip()
+        budget = float(request.form.get("estimated_budget", 0) or 0)
+        lat = float(request.form.get("latitude", 0) or 0)
+        lng = float(request.form.get("longitude", 0) or 0)
+
+        if not name or not slug or not description:
+            flash("Destination Name, Slug, and Description are required.", "error")
+        else:
+            db = get_db()
+            try:
+                now = now_iso()
+                cur = db.execute(
+                    """INSERT INTO destinations (name, slug, state, address, sightseeing_time, best_time,
+                                                weather_info, description, elevation, estimated_budget, latitude, longitude,
+                                                organization_id, created_at, updated_at)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'org_default', ?, ?)""",
+                    (name, slug, state, address, sightseeing_time, best_time, weather_info, description, elevation, budget, lat, lng, now, now),
+                )
+                dest_id = cur.lastrowid
+                if image_url:
+                    db.execute(
+                        """INSERT INTO destination_images (destination_id, image_url, caption, is_primary, created_at)
+                           VALUES (?, ?, ?, 1, ?)""",
+                        (dest_id, image_url, f"{name} primary view", now),
+                    )
+                db.commit()
+                flash(f"Destination '{name}' created successfully!", "success")
+                return redirect(url_for("admin_dashboard", tab="destinations"))
+            except sqlite3.IntegrityError:
+                flash(f"Slug '{slug}' is already taken. Please use a unique slug.", "error")
+            finally:
+                db.close()
+
+    return render_template(
+        "admin_destination_form.html",
+        heading="Add New Destination",
+        action=url_for("admin_add_destination"),
+        dest={},
+    )
+
+
+@app.route("/admin/destinations/<int:dest_id>/edit", methods=["GET", "POST"])
+@login_required
+def admin_edit_destination(dest_id):
+    if not current_user.is_admin:
+        abort(404)
+
+    db = get_db()
+    try:
+        row = db.execute(
+            """SELECT d.*, 
+                      (SELECT image_url FROM destination_images WHERE destination_id = d.id ORDER BY is_primary DESC, id ASC LIMIT 1) AS image_url
+               FROM destinations d WHERE d.id = ?""",
+            (dest_id,),
+        ).fetchone()
+        if not row:
+            abort(404)
+        dest = dict(row)
+
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            slug = request.form.get("slug", "").strip().lower()
+            state = request.form.get("state", "").strip()
+            address = request.form.get("address", "").strip()
+            sightseeing_time = request.form.get("sightseeing_time", "4-5 hours").strip()
+            best_time = request.form.get("best_time", "").strip()
+            weather_info = request.form.get("weather_info", "").strip()
+            description = request.form.get("description", "").strip()
+            image_url = request.form.get("image_url", "").strip()
+            elevation = request.form.get("elevation", "").strip()
+            budget = float(request.form.get("estimated_budget", 0) or 0)
+            lat = float(request.form.get("latitude", 0) or 0)
+            lng = float(request.form.get("longitude", 0) or 0)
+
+            if not name or not slug or not description:
+                flash("Destination Name, Slug, and Description are required.", "error")
+            else:
+                now = now_iso()
+                db.execute(
+                    """UPDATE destinations 
+                       SET name = ?, slug = ?, state = ?, address = ?, sightseeing_time = ?, best_time = ?,
+                           weather_info = ?, description = ?, elevation = ?, estimated_budget = ?,
+                           latitude = ?, longitude = ?, updated_at = ?
+                       WHERE id = ?""",
+                    (name, slug, state, address, sightseeing_time, best_time, weather_info, description, elevation, budget, lat, lng, now, dest_id),
+                )
+                if image_url:
+                    existing_img = db.execute("SELECT id FROM destination_images WHERE destination_id = ? AND is_primary = 1", (dest_id,)).fetchone()
+                    if existing_img:
+                        db.execute("UPDATE destination_images SET image_url = ? WHERE id = ?", (image_url, existing_img["id"]))
+                    else:
+                        db.execute(
+                            "INSERT INTO destination_images (destination_id, image_url, caption, is_primary, created_at) VALUES (?, ?, ?, 1, ?)",
+                            (dest_id, image_url, f"{name} view", now),
+                        )
+                db.commit()
+                flash(f"Destination '{name}' updated successfully!", "success")
+                return redirect(url_for("admin_dashboard", tab="destinations"))
+    finally:
+        db.close()
+
+    return render_template(
+        "admin_destination_form.html",
+        heading=f"Edit Destination: {dest['name']}",
+        action=url_for("admin_edit_destination", dest_id=dest_id),
+        dest=dest,
+    )
+
+
+@app.route("/admin/destinations/<int:dest_id>/delete", methods=["POST"])
+@login_required
+def admin_delete_destination(dest_id):
+    if not current_user.is_admin:
+        abort(404)
+
+    db = get_db()
+    try:
+        dest = db.execute("SELECT name FROM destinations WHERE id = ?", (dest_id,)).fetchone()
+        name = dest["name"] if dest else f"ID {dest_id}"
+        db.execute("DELETE FROM destinations WHERE id = ?", (dest_id,))
+        db.commit()
+        flash(f"Destination '{name}' and all associated records deleted.", "info")
+    finally:
+        db.close()
+
+    return redirect(url_for("admin_dashboard", tab="destinations"))
+
+
+# --- HOTEL CRUD ---
+@app.route("/admin/hotels/add", methods=["GET", "POST"])
+@login_required
+def admin_add_hotel():
+    if not current_user.is_admin:
+        abort(404)
+
+    destinations = list_destinations()
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        dest_id = int(request.form.get("destination_id", 0))
+        stay_type = request.form.get("type", "Hotel")
+        category = request.form.get("category", "Standard")
+        price = float(request.form.get("price_per_night", 2000) or 2000)
+        rating = float(request.form.get("rating", 4.5) or 4.5)
+        is_available = int(request.form.get("is_available", 1))
+        phone = request.form.get("phone", "").strip()
+        address = request.form.get("address", "").strip()
+        amenities = request.form.get("amenities", "").strip()
+        image_url = request.form.get("image_url", "").strip()
+        booking_url = request.form.get("booking_url", "").strip()
+        reviews_count = int(request.form.get("reviews_count", 25) or 25)
+        description = request.form.get("description", "").strip()
+
+        if not name or not dest_id or not description:
+            flash("Hotel Name, Destination, and Description are required.", "error")
+        else:
+            db = get_db()
+            try:
+                now = now_iso()
+                db.execute(
+                    """INSERT INTO accommodations (destination_id, name, type, category, price_per_night, rating,
+                                                  reviews_count, distance, address, amenities, phone, booking_url,
+                                                  description, image_url, is_available, created_at)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (dest_id, name, stay_type, category, price, rating, reviews_count, address, address, amenities, phone, booking_url, description, image_url, is_available, now),
+                )
+                db.commit()
+                flash(f"Hotel '{name}' added successfully!", "success")
+                return redirect(url_for("admin_dashboard", tab="hotels"))
+            finally:
+                db.close()
+
+    return render_template(
+        "admin_hotel_form.html",
+        heading="Add New Hotel",
+        action=url_for("admin_add_hotel"),
+        hotel={},
+        destinations=destinations,
+    )
+
+
+@app.route("/admin/hotels/<int:hotel_id>/edit", methods=["GET", "POST"])
+@login_required
+def admin_edit_hotel(hotel_id):
+    if not current_user.is_admin:
+        abort(404)
+
+    destinations = list_destinations()
+    db = get_db()
+    try:
+        row = db.execute("SELECT * FROM accommodations WHERE id = ?", (hotel_id,)).fetchone()
+        if not row:
+            abort(404)
+        hotel = dict(row)
+
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            dest_id = int(request.form.get("destination_id", 0))
+            stay_type = request.form.get("type", "Hotel")
+            category = request.form.get("category", "Standard")
+            price = float(request.form.get("price_per_night", 2000) or 2000)
+            rating = float(request.form.get("rating", 4.5) or 4.5)
+            is_available = int(request.form.get("is_available", 1))
+            phone = request.form.get("phone", "").strip()
+            address = request.form.get("address", "").strip()
+            amenities = request.form.get("amenities", "").strip()
+            image_url = request.form.get("image_url", "").strip()
+            booking_url = request.form.get("booking_url", "").strip()
+            reviews_count = int(request.form.get("reviews_count", 25) or 25)
+            description = request.form.get("description", "").strip()
+
+            if not name or not dest_id or not description:
+                flash("Hotel Name, Destination, and Description are required.", "error")
+            else:
+                db.execute(
+                    """UPDATE accommodations
+                       SET destination_id = ?, name = ?, type = ?, category = ?, price_per_night = ?,
+                           rating = ?, reviews_count = ?, distance = ?, address = ?, amenities = ?,
+                           phone = ?, booking_url = ?, description = ?, image_url = ?, is_available = ?
+                       WHERE id = ?""",
+                    (dest_id, name, stay_type, category, price, rating, reviews_count, address, address, amenities, phone, booking_url, description, image_url, is_available, hotel_id),
+                )
+                db.commit()
+                flash(f"Hotel '{name}' updated successfully!", "success")
+                return redirect(url_for("admin_dashboard", tab="hotels"))
+    finally:
+        db.close()
+
+    return render_template(
+        "admin_hotel_form.html",
+        heading=f"Edit Hotel: {hotel['name']}",
+        action=url_for("admin_edit_hotel", hotel_id=hotel_id),
+        hotel=hotel,
+        destinations=destinations,
+    )
+
+
+@app.route("/admin/hotels/<int:hotel_id>/delete", methods=["POST"])
+@login_required
+def admin_delete_hotel(hotel_id):
+    if not current_user.is_admin:
+        abort(404)
+
+    db = get_db()
+    try:
+        hotel = db.execute("SELECT name FROM accommodations WHERE id = ?", (hotel_id,)).fetchone()
+        name = hotel["name"] if hotel else f"ID {hotel_id}"
+        db.execute("DELETE FROM accommodations WHERE id = ?", (hotel_id,))
+        db.commit()
+        flash(f"Hotel '{name}' deleted successfully.", "info")
+    finally:
+        db.close()
+
+    return redirect(url_for("admin_dashboard", tab="hotels"))
+
+
+# --- NEARBY PLACES CRUD ---
+@app.route("/admin/nearby/add", methods=["GET", "POST"])
+@login_required
+def admin_add_nearby():
+    if not current_user.is_admin:
+        abort(404)
+
+    destinations = list_destinations()
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        dest_id = int(request.form.get("destination_id", 0))
+        location = request.form.get("location", "").strip()
+        visiting_time = request.form.get("visiting_time", "2 hours").strip()
+        distance = request.form.get("distance", "").strip()
+        entry_fee = float(request.form.get("entry_fee", 0) or 0)
+        best_time = request.form.get("best_time", "").strip()
+        image_url = request.form.get("image_url", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not name or not dest_id or not description:
+            flash("Attraction Name, Destination, and Description are required.", "error")
+        else:
+            db = get_db()
+            try:
+                now = now_iso()
+                db.execute(
+                    """INSERT INTO nearby_places (destination_id, name, description, location, image_url,
+                                                 visiting_time, distance, entry_fee, best_time, created_at, updated_at)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (dest_id, name, description, location, image_url, visiting_time, distance, entry_fee, best_time, now, now),
+                )
+                db.commit()
+                flash(f"Nearby attraction '{name}' added successfully!", "success")
+                return redirect(url_for("admin_dashboard", tab="nearby"))
+            finally:
+                db.close()
+
+    return render_template(
+        "admin_nearby_form.html",
+        heading="Add Nearby Attraction",
+        action=url_for("admin_add_nearby"),
+        place={},
+        destinations=destinations,
+    )
+
+
+@app.route("/admin/nearby/<int:place_id>/edit", methods=["GET", "POST"])
+@login_required
+def admin_edit_nearby(place_id):
+    if not current_user.is_admin:
+        abort(404)
+
+    destinations = list_destinations()
+    db = get_db()
+    try:
+        row = db.execute("SELECT * FROM nearby_places WHERE id = ?", (place_id,)).fetchone()
+        if not row:
+            abort(404)
+        place = dict(row)
+
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            dest_id = int(request.form.get("destination_id", 0))
+            location = request.form.get("location", "").strip()
+            visiting_time = request.form.get("visiting_time", "2 hours").strip()
+            distance = request.form.get("distance", "").strip()
+            entry_fee = float(request.form.get("entry_fee", 0) or 0)
+            best_time = request.form.get("best_time", "").strip()
+            image_url = request.form.get("image_url", "").strip()
+            description = request.form.get("description", "").strip()
+
+            if not name or not dest_id or not description:
+                flash("Attraction Name, Destination, and Description are required.", "error")
+            else:
+                now = now_iso()
+                db.execute(
+                    """UPDATE nearby_places
+                       SET destination_id = ?, name = ?, description = ?, location = ?, image_url = ?,
+                           visiting_time = ?, distance = ?, entry_fee = ?, best_time = ?, updated_at = ?
+                       WHERE id = ?""",
+                    (dest_id, name, description, location, image_url, visiting_time, distance, entry_fee, best_time, now, place_id),
+                )
+                db.commit()
+                flash(f"Nearby attraction '{name}' updated successfully!", "success")
+                return redirect(url_for("admin_dashboard", tab="nearby"))
+    finally:
+        db.close()
+
+    return render_template(
+        "admin_nearby_form.html",
+        heading=f"Edit Attraction: {place['name']}",
+        action=url_for("admin_edit_nearby", place_id=place_id),
+        place=place,
+        destinations=destinations,
+    )
+
+
+@app.route("/admin/nearby/<int:place_id>/delete", methods=["POST"])
+@login_required
+def admin_delete_nearby(place_id):
+    if not current_user.is_admin:
+        abort(404)
+
+    db = get_db()
+    try:
+        place = db.execute("SELECT name FROM nearby_places WHERE id = ?", (place_id,)).fetchone()
+        name = place["name"] if place else f"ID {place_id}"
+        db.execute("DELETE FROM nearby_places WHERE id = ?", (place_id,))
+        db.commit()
+        flash(f"Nearby attraction '{name}' deleted successfully.", "info")
+    finally:
+        db.close()
+
+    return redirect(url_for("admin_dashboard", tab="nearby"))
+
 
 
 # 19. API WEATHER ENDPOINT (AJAX HELPER)
@@ -1245,8 +1700,9 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", "5000"))
     debug = os.environ.get("FLASK_DEBUG", "True").lower() in {"1", "true", "yes"}
     print("\n" + "=" * 65)
-    print("🏔️  HIMALAYAN TRAVEL ITINERARY DESIGNER SERVER STARTED")
+    print("🗺️  ITINERARY DESIGNER SERVER STARTED")
     print(f"👉  Open your browser at: http://{host}:{port}/")
     print(f"🛡️  Admin Account:           {Config.ADMIN_USERNAME} / {Config.ADMIN_PASSWORD}")
     print("=" * 65 + "\n")
     app.run(host=host, port=port, debug=debug)
+

@@ -1,71 +1,313 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Overview | Himalayan Travel Itinerary Designer{% endblock %}
+{% block title %}Administrator Panel | Itinerary Designer{% endblock %}
 
 {% block content %}
 <section class="section">
+    <!-- Header -->
     <div class="section-header">
         <div>
-            <span class="tag" style="background:#fee2e2; color:#991b1b; margin-bottom:6px;">Administrator Panel</span>
-            <h1>Application Administration Overview</h1>
+            <span class="tag" style="background:#fee2e2; color:#991b1b; margin-bottom:6px; font-weight:700;">⚙️ Administrator Panel</span>
+            <h1 style="font-size:2.2rem; margin-top:4px;">Travel Management System</h1>
             <p style="color: var(--muted); font-size: 1rem;">
-                System telemetry and metrics. User itineraries remain private and account-scoped.
+                Manage destinations, hotels, nearby visiting places, and users dynamically without editing HTML files.
             </p>
         </div>
-        <a href="{{ url_for('destinations') }}" class="btn sm primary">Catalog View</a>
-    </div>
-
-    <!-- Statistics Cards -->
-    <div class="hero-stats" style="max-width: 100%; margin: 24px 0 36px;">
-        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
-            <strong style="color: var(--primary-dark); font-size: 2.2rem;">{{ counts.users }}</strong>
-            <span style="color: var(--muted); font-weight: 700;">Registered Travelers</span>
-        </div>
-        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
-            <strong style="color: var(--accent); font-size: 2.2rem;">{{ counts.destinations }}</strong>
-            <span style="color: var(--muted); font-weight: 700;">Himalayan Destinations</span>
-        </div>
-        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
-            <strong style="color: var(--hotel-color); font-size: 2.2rem;">{{ counts.accommodations }}</strong>
-            <span style="color: var(--muted); font-weight: 700;">Hotels & Homestays</span>
-        </div>
-        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
-            <strong style="color: var(--homestay-color); font-size: 2.2rem;">{{ counts.itineraries }}</strong>
-            <span style="color: var(--muted); font-weight: 700;">Generated Itineraries</span>
+        <div class="cta-row">
+            <a href="{{ url_for('destinations') }}" class="btn sm" target="_blank">🌐 Live Website Catalog</a>
         </div>
     </div>
 
-    <!-- Destinations Management Quick Table -->
-    <div class="day-card">
-        <h3>Catalog Destinations & Stays Summary</h3>
-        <div style="overflow-x: auto; margin-top: 14px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.92rem;">
-                <thead>
-                    <tr style="border-bottom: 2px solid var(--border); text-align: left;">
-                        <th style="padding: 10px 8px;">Destination</th>
-                        <th style="padding: 10px 8px;">State</th>
-                        <th style="padding: 10px 8px;">Elevation</th>
-                        <th style="padding: 10px 8px;">Difficulty</th>
-                        <th style="padding: 10px 8px;">Est. Budget</th>
-                        <th style="padding: 10px 8px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dest in destinations %}
-                        <tr style="border-bottom: 1px solid var(--border);">
-                            <td style="padding: 12px 8px; font-weight: 700;">{{ dest.name }}</td>
-                            <td style="padding: 12px 8px;"><span class="tag">{{ dest.state }}</span></td>
-                            <td style="padding: 12px 8px;">{{ dest.elevation }}</td>
-                            <td style="padding: 12px 8px;">{{ dest.difficulty }}</td>
-                            <td style="padding: 12px 8px;">₹{{ '{:,.0f}'.format(dest.estimated_budget or 0) }}</td>
-                            <td style="padding: 12px 8px;">
-                                <a href="{{ url_for('destination_detail', slug=dest.slug) }}" class="btn sm" target="_blank">View Guide →</a>
-                            </td>
+    <!-- Navigation Tabs -->
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 24px; border-bottom: 2px solid var(--border); padding-bottom: 12px;">
+        <a href="{{ url_for('admin_dashboard', tab='overview') }}" class="btn sm {% if active_tab == 'overview' %}primary{% endif %}">📊 Dashboard Overview</a>
+        <a href="{{ url_for('admin_dashboard', tab='destinations') }}" class="btn sm {% if active_tab == 'destinations' %}primary{% endif %}">🏔️ Manage Destinations ({{ counts.destinations }})</a>
+        <a href="{{ url_for('admin_dashboard', tab='hotels') }}" class="btn sm {% if active_tab == 'hotels' %}primary{% endif %}">🏨 Manage Hotels ({{ counts.accommodations }})</a>
+        <a href="{{ url_for('admin_dashboard', tab='nearby') }}" class="btn sm {% if active_tab == 'nearby' %}primary{% endif %}">📍 Manage Nearby Places ({{ counts.nearby_places }})</a>
+        <a href="{{ url_for('admin_dashboard', tab='users') }}" class="btn sm {% if active_tab == 'users' %}primary{% endif %}">👥 Manage Users ({{ counts.users }})</a>
+    </div>
+
+    <!-- SECTION 1: DASHBOARD OVERVIEW -->
+    {% if active_tab == 'overview' %}
+        <div class="hero-stats" style="max-width: 100%; margin-bottom: 30px;">
+            <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+                <strong style="color: var(--primary-dark); font-size: 2.2rem;">{{ counts.destinations }}</strong>
+                <span style="color: var(--muted); font-weight: 700;">Destinations</span>
+            </div>
+            <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+                <strong style="color: var(--hotel-color); font-size: 2.2rem;">{{ counts.accommodations }}</strong>
+                <span style="color: var(--muted); font-weight: 700;">Registered Hotels</span>
+            </div>
+            <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+                <strong style="color: var(--accent); font-size: 2.2rem;">{{ counts.nearby_places }}</strong>
+                <span style="color: var(--muted); font-weight: 700;">Nearby Attractions</span>
+            </div>
+            <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+                <strong style="color: var(--homestay-color); font-size: 2.2rem;">{{ counts.users }}</strong>
+                <span style="color: var(--muted); font-weight: 700;">Users Registered</span>
+            </div>
+        </div>
+
+        <div class="day-card" style="margin-bottom: 24px;">
+            <h3>Quick Actions</h3>
+            <p style="color: var(--muted); font-size: 0.92rem; margin-bottom: 14px;">Direct shortcuts to manage application content dynamically:</p>
+            <div class="cta-row">
+                <a href="{{ url_for('admin_add_destination') }}" class="btn primary sm">➕ Add New Destination</a>
+                <a href="{{ url_for('admin_add_hotel') }}" class="btn primary sm">➕ Add New Hotel</a>
+                <a href="{{ url_for('admin_add_nearby') }}" class="btn primary sm">➕ Add Nearby Attraction</a>
+            </div>
+        </div>
+
+        <div class="day-card">
+            <h3>Registered Destinations Summary</h3>
+            <div style="overflow-x: auto; margin-top: 14px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.92rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                            <th style="padding: 10px 8px;">Destination</th>
+                            <th style="padding: 10px 8px;">State</th>
+                            <th style="padding: 10px 8px;">Est. Sightseeing</th>
+                            <th style="padding: 10px 8px;">Best Time</th>
+                            <th style="padding: 10px 8px;">Actions</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for dest in destinations %}
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 12px 8px; font-weight: 700;">{{ dest.name }}</td>
+                                <td style="padding: 12px 8px;"><span class="tag">{{ dest.state }}</span></td>
+                                <td style="padding: 12px 8px;">⏱️ {{ dest.sightseeing_time or '4-5 hours' }}</td>
+                                <td style="padding: 12px 8px;">{{ dest.best_time or 'All year' }}</td>
+                                <td style="padding: 12px 8px;">
+                                    <a href="{{ url_for('destination_detail', slug=dest.slug) }}" class="btn sm" target="_blank">View Live Guide →</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+
+    <!-- SECTION 2: MANAGE DESTINATIONS -->
+    {% elif active_tab == 'destinations' %}
+        <div class="section-header">
+            <div>
+                <h2>Manage Destinations</h2>
+                <p style="color: var(--muted); font-size: 0.95rem;">Add, edit, or delete travel destinations. All changes reflect live instantly.</p>
+            </div>
+            <a href="{{ url_for('admin_add_destination') }}" class="btn primary sm">➕ Add New Destination</a>
+        </div>
+
+        <div class="day-card">
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.92rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                            <th style="padding: 10px 8px;">Image</th>
+                            <th style="padding: 10px 8px;">Name & Slug</th>
+                            <th style="padding: 10px 8px;">Location / Address</th>
+                            <th style="padding: 10px 8px;">Sightseeing Time</th>
+                            <th style="padding: 10px 8px;">Best Time</th>
+                            <th style="padding: 10px 8px;">Budget</th>
+                            <th style="padding: 10px 8px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dest in destinations %}
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 10px 8px; width: 60px;">
+                                    {% if dest.image_url %}
+                                        <img src="{{ dest.image_url }}" alt="{{ dest.name }}" style="width:50px; height:38px; object-fit:cover; border-radius:4px;">
+                                    {% else %}
+                                        <div style="width:50px; height:38px; background:#e2e8f0; display:flex; align-items:center; justify-content:center; border-radius:4px;">🏔️</div>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 12px 8px;">
+                                    <strong>{{ dest.name }}</strong>
+                                    <div style="font-size:0.78rem; color:var(--muted);">/{{ dest.slug }}</div>
+                                </td>
+                                <td style="padding: 12px 8px; font-size:0.86rem;">{{ dest.address or dest.state or 'Not set' }}</td>
+                                <td style="padding: 12px 8px;">⏱️ {{ dest.sightseeing_time or '4-5 hours' }}</td>
+                                <td style="padding: 12px 8px; font-size:0.86rem;">{{ dest.best_time or 'Anytime' }}</td>
+                                <td style="padding: 12px 8px; font-weight:700;">₹{{ '{:,.0f}'.format(dest.estimated_budget or 0) }}</td>
+                                <td style="padding: 12px 8px;">
+                                    <div style="display:flex; gap:6px;">
+                                        <a href="{{ url_for('admin_edit_destination', dest_id=dest.id) }}" class="btn sm">✏️ Edit</a>
+                                        <form method="post" action="{{ url_for('admin_delete_destination', dest_id=dest.id) }}" onsubmit="return confirm('Are you sure you want to delete {{ dest.name }}? This will also remove associated hotels and attractions.');" style="display:inline; margin:0;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn danger sm">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    <!-- SECTION 3: MANAGE HOTELS -->
+    {% elif active_tab == 'hotels' %}
+        <div class="section-header">
+            <div>
+                <h2>Manage Hotels & Accommodations</h2>
+                <p style="color: var(--muted); font-size: 0.95rem;">Full CRUD control for hotels, homestays, and resorts across all destinations.</p>
+            </div>
+            <a href="{{ url_for('admin_add_hotel') }}" class="btn primary sm">➕ Add New Hotel</a>
+        </div>
+
+        <div class="day-card">
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.92rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                            <th style="padding: 10px 8px;">Hotel Name</th>
+                            <th style="padding: 10px 8px;">Destination</th>
+                            <th style="padding: 10px 8px;">Type & Category</th>
+                            <th style="padding: 10px 8px;">Price / Night</th>
+                            <th style="padding: 10px 8px;">Rating</th>
+                            <th style="padding: 10px 8px;">Availability</th>
+                            <th style="padding: 10px 8px;">Contact</th>
+                            <th style="padding: 10px 8px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hotel in hotels %}
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 12px 8px;">
+                                    <strong>{{ hotel.name }}</strong>
+                                    <div style="font-size:0.78rem; color:var(--muted);">📍 {{ hotel.address or hotel.distance or 'Center' }}</div>
+                                </td>
+                                <td style="padding: 12px 8px;"><span class="tag">{{ hotel.destination_name }}</span></td>
+                                <td style="padding: 12px 8px;">
+                                    <span class="tag {{ 'homestay' if 'Home' in hotel.type else 'hotel' }}">{{ hotel.type }}</span>
+                                    <span class="tag" style="background:#e0e7ff; color:#3730a3;">{{ hotel.category or 'Standard' }}</span>
+                                </td>
+                                <td style="padding: 12px 8px; font-weight:700;">₹{{ '{:,.0f}'.format(hotel.price_per_night) }}</td>
+                                <td style="padding: 12px 8px; color:var(--accent); font-weight:800;">★ {{ hotel.rating }}</td>
+                                <td style="padding: 12px 8px;">
+                                    {% if hotel.is_available == 0 %}
+                                        <span class="tag" style="background:#fee2e2; color:#991b1b;">Unavailable</span>
+                                    {% else %}
+                                        <span class="tag" style="background:#dcfce7; color:#166534;">Available</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 12px 8px; font-size:0.86rem;">{{ hotel.phone or 'N/A' }}</td>
+                                <td style="padding: 12px 8px;">
+                                    <div style="display:flex; gap:6px;">
+                                        <a href="{{ url_for('admin_edit_hotel', hotel_id=hotel.id) }}" class="btn sm">✏️ Edit</a>
+                                        <form method="post" action="{{ url_for('admin_delete_hotel', hotel_id=hotel.id) }}" onsubmit="return confirm('Permanently delete {{ hotel.name }}?');" style="display:inline; margin:0;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn danger sm">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    <!-- SECTION 4: MANAGE NEARBY PLACES -->
+    {% elif active_tab == 'nearby' %}
+        <div class="section-header">
+            <div>
+                <h2>Manage Nearby Visiting Places & Tourist Attractions</h2>
+                <p style="color: var(--muted); font-size: 0.95rem;">Configure nearby sights, visiting times, distances, and entry fees for each destination.</p>
+            </div>
+            <a href="{{ url_for('admin_add_nearby') }}" class="btn primary sm">➕ Add Nearby Attraction</a>
+        </div>
+
+        <div class="day-card">
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.92rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                            <th style="padding: 10px 8px;">Attraction Name</th>
+                            <th style="padding: 10px 8px;">Destination</th>
+                            <th style="padding: 10px 8px;">Visiting Time</th>
+                            <th style="padding: 10px 8px;">Distance</th>
+                            <th style="padding: 10px 8px;">Entry Fee</th>
+                            <th style="padding: 10px 8px;">Best Time</th>
+                            <th style="padding: 10px 8px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for place in nearby_places %}
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 12px 8px;">
+                                    <strong>{{ place.name }}</strong>
+                                    <div style="font-size:0.78rem; color:var(--muted);">📍 {{ place.location or 'Local area' }}</div>
+                                </td>
+                                <td style="padding: 12px 8px;"><span class="tag">{{ place.destination_name }}</span></td>
+                                <td style="padding: 12px 8px;">⏱️ {{ place.visiting_time or '1-2 hours' }}</td>
+                                <td style="padding: 12px 8px; font-size:0.86rem;">{{ place.distance or 'Near base' }}</td>
+                                <td style="padding: 12px 8px;">
+                                    {% if place.entry_fee and place.entry_fee > 0 %}
+                                        ₹{{ '{:,.0f}'.format(place.entry_fee) }}
+                                    {% else %}
+                                        <span style="color:var(--success); font-weight:700;">Free</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 12px 8px; font-size:0.86rem;">{{ place.best_time or 'All year' }}</td>
+                                <td style="padding: 12px 8px;">
+                                    <div style="display:flex; gap:6px;">
+                                        <a href="{{ url_for('admin_edit_nearby', place_id=place.id) }}" class="btn sm">✏️ Edit</a>
+                                        <form method="post" action="{{ url_for('admin_delete_nearby', place_id=place.id) }}" onsubmit="return confirm('Permanently delete {{ place.name }}?');" style="display:inline; margin:0;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn danger sm">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    <!-- SECTION 5: MANAGE USERS -->
+    {% elif active_tab == 'users' %}
+        <div class="section-header">
+            <div>
+                <h2>Registered Users & Administrators</h2>
+                <p style="color: var(--muted); font-size: 0.95rem;">Overview of registered user accounts and administrator permissions.</p>
+            </div>
+        </div>
+
+        <div class="day-card">
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.92rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                            <th style="padding: 10px 8px;">ID</th>
+                            <th style="padding: 10px 8px;">Name</th>
+                            <th style="padding: 10px 8px;">Email Address</th>
+                            <th style="padding: 10px 8px;">Role</th>
+                            <th style="padding: 10px 8px;">Joined Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 12px 8px; font-family: monospace;">{{ user.user_id }}</td>
+                                <td style="padding: 12px 8px; font-weight: 700;">{{ user.name }}</td>
+                                <td style="padding: 12px 8px;">{{ user.email }}</td>
+                                <td style="padding: 12px 8px;">
+                                    {% if user.role == 'ADMIN' %}
+                                        <span class="tag" style="background:#fee2e2; color:#991b1b;">ADMIN</span>
+                                    {% else %}
+                                        <span class="tag" style="background:#f1f5f9; color:#475569;">USER</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 12px 8px; font-size: 0.86rem; color: var(--muted);">{{ user.created_at[:10] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
 </section>
 {% endblock %}

@@ -1,45 +1,45 @@
 {% extends "base.html" %}
 
-{% block title %}{{ trip.name }} | Itinerary Detail | Himalayan Travel Designer{% endblock %}
+{% block title %}{{ trip.name }} | Itinerary Detail | Itinerary Designer{% endblock %}
 
 {% block content %}
 <section class="section" style="margin-top: 10px;">
     <!-- Top Action Bar -->
     <div class="section-header">
         <div>
-            <span class="tag" style="margin-bottom: 8px;">{{ destination.state or 'Himalayan Journey' }}</span>
+            <span class="tag" style="margin-bottom: 8px;">{{ destination.state or 'Travel Journey' }}</span>
             <h1 style="font-size: 2.3rem;">{{ trip.name }}</h1>
             <p style="color: var(--muted); font-size: 1rem; margin-top: 4px;">
-                🏔️ Destination: <a href="{{ url_for('destination_detail', slug=destination.slug) }}" style="color: var(--primary); font-weight: 700; text-decoration: underline;">{{ destination.name }}</a>
-                • 📅 {{ trip.start_date }} to {{ trip.end_date }} ({{ trip.days|length }} Days)
+                📍 Destination: <a href="{{ url_for('destination_detail', slug=destination.slug) }}" style="color: var(--primary); font-weight: 700; text-decoration: underline;">{{ destination.name }}</a>
+                • ⏱️ Est. Sightseeing Time: <strong style="color: var(--primary-dark);">{{ destination.sightseeing_time or '4-5 hours' }}</strong>
                 • 👥 {{ trip.number_of_travelers }} Traveler(s)
             </p>
         </div>
 
         <div class="cta-row">
-            <a class="btn primary sm" href="{{ url_for('edit_itinerary', itinerary_id=trip.id) }}">✏️ Edit Itinerary</a>
+            <a class="btn primary sm" href="{{ url_for('edit_itinerary', itinerary_id=trip.id) }}">✏️ Edit Plan</a>
             <a class="btn sm" href="{{ url_for('export_itinerary', itinerary_id=trip.id) }}">📄 Download TXT Plan</a>
             <a class="btn sm" href="{{ url_for('my_itineraries') }}">Back to Trips</a>
         </div>
     </div>
 
-    <!-- Quick Stats Cards -->
+    <!-- Sightseeing & Planning Stats Cards -->
     <div class="hero-stats" style="max-width: 100%; margin: 20px 0 30px;">
         <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
-            <strong style="color: var(--primary-dark); font-size: 1.8rem;">₹{{ '{:,.0f}'.format(trip.budget or 0) }}</strong>
-            <span style="color: var(--muted); font-weight: 700;">Total Budget</span>
+            <strong style="color: var(--primary-dark); font-size: 1.8rem;">{{ destination.sightseeing_time or '4-5 hrs' }}</strong>
+            <span style="color: var(--muted); font-weight: 700;">Main Sightseeing Time</span>
         </div>
         <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
-            <strong style="color: var(--accent); font-size: 1.8rem;">{{ trip.travel_style or 'Moderate' }}</strong>
+            <strong style="color: var(--accent); font-size: 1.8rem;">₹{{ '{:,.0f}'.format(trip.budget or 0) }}</strong>
+            <span style="color: var(--muted); font-weight: 700;">Estimated Budget</span>
+        </div>
+        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
+            <strong style="color: var(--hotel-color); font-size: 1.8rem;">{{ trip.travel_style or 'Moderate' }}</strong>
             <span style="color: var(--muted); font-weight: 700;">Travel Style</span>
         </div>
         <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
-            <strong style="color: var(--hotel-color); font-size: 1.8rem;">{{ trip.transport_preference or 'Train' }}</strong>
+            <strong style="color: var(--homestay-color); font-size: 1.8rem;">{{ trip.transport_preference or 'Train' }}</strong>
             <span style="color: var(--muted); font-weight: 700;">Transport</span>
-        </div>
-        <div class="hero-stat-card" style="background: var(--surface); color: var(--text); border-color: var(--border);">
-            <strong style="color: var(--homestay-color); font-size: 1.8rem;">{{ trip.accommodation_preference or 'Homestay' }}</strong>
-            <span style="color: var(--muted); font-weight: 700;">Stay Style</span>
         </div>
     </div>
 
@@ -150,10 +150,12 @@
         <div id="itinerary-map" class="map-view-box" style="height: 360px;"></div>
     </div>
 
-    <!-- DAY-BY-DAY SCHEDULE -->
+    <!-- SUGGESTED SIGHTSEEING SEQUENCE & SCHEDULE -->
     <div class="section-header">
-        <h2>Day-by-Day Itinerary Schedule</h2>
-        <span style="color: var(--muted); font-size: 0.95rem;">Total {{ trip.days|length }} Days Planned</span>
+        <div>
+            <h2>Suggested Sightseeing Sequence & Schedule</h2>
+            <p style="color: var(--muted); font-size: 0.95rem;">Recommended sequence of attractions and sights with time estimates.</p>
+        </div>
     </div>
 
     {% if trip.days %}

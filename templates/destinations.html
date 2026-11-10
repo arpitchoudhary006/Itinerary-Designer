@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Destinations & Interactive Himalayan Map | Himalayan Travel Designer{% endblock %}
+{% block title %}Destinations & Interactive Map | Itinerary Designer{% endblock %}
 
 {% block content %}
 <section class="section" style="margin-top: 10px;">
     <div class="section-header">
         <div>
-            <h1>Himalayan Destinations Catalog</h1>
+            <h1>Destinations Catalog</h1>
             <p style="color: var(--muted); font-size: 1.05rem;">
-                Browse iconic mountain destinations across Uttarakhand and Himachal Pradesh with live weather forecasts and authentic homestay options.
+                Browse iconic destinations with live weather forecasts, curated hotel stays, and estimated sightseeing times.
             </p>
         </div>
         <div>
@@ -18,7 +18,7 @@
 
     <!-- Search Form -->
     <form method="get" action="{{ url_for('destinations') }}" style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;" role="search">
-        <input type="search" name="q" value="{{ search }}" maxlength="100" placeholder="Search by name, state (Uttarakhand / Himachal), or trek name..." aria-label="Search destinations" style="flex: 1; min-width: 260px; padding: 12px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); font: inherit;">
+        <input type="search" name="q" value="{{ search }}" maxlength="100" placeholder="Search by name, state, or location..." aria-label="Search destinations" style="flex: 1; min-width: 260px; padding: 12px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); font: inherit;">
         <button class="btn primary" type="submit">🔍 Search Catalog</button>
         {% if search %}
             <a href="{{ url_for('destinations') }}" class="btn">Clear Filter</a>
@@ -29,8 +29,8 @@
     <div class="map-container-wrap">
         <div class="map-controls-bar">
             <div>
-                <strong>🗺️ Himalayan Regional Explorer Map</strong>
-                <span style="font-size: 0.85rem; color: var(--muted); margin-left: 8px;">Click any peak pin to preview elevation and stays</span>
+                <strong>🗺️ Regional Explorer Map</strong>
+                <span style="font-size: 0.85rem; color: var(--muted); margin-left: 8px;">Click any pin to preview details and stays</span>
             </div>
         </div>
         <div id="explorer-map" class="map-view-box tall"></div>

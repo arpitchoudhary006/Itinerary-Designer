@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}My Trips | Himalayan Travel Itinerary Designer{% endblock %}
+{% block title %}My Trips | Itinerary Designer{% endblock %}
 
 {% block content %}
 <section class="section">
     <div class="section-header">
         <div>
-            <h1>My Himalayan Itineraries</h1>
+            <h1>My Itineraries</h1>
             <p style="color: var(--muted); font-size: 1.05rem;">
                 Private travel plans created under your account. All data remains exclusively accessible to you.
             </p>
@@ -19,7 +19,7 @@
             {% for trip in itineraries %}
                 <article class="day-card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
                     <div style="flex: 1; min-width: 280px;">
-                        <span class="tag" style="margin-bottom: 8px;">{{ trip.destination_name or 'Himalayan Expedition' }}</span>
+                        <span class="tag" style="margin-bottom: 8px;">{{ trip.destination_name or 'Trip Plan' }}</span>
                         <h2 style="font-size: 1.4rem; margin-top: 4px;">{{ trip.name }}</h2>
                         
                         <div style="font-size: 0.9rem; color: var(--muted); margin: 6px 0 12px; display: flex; flex-wrap: wrap; gap: 14px;">

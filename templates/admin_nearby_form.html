@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}{{ heading }} | Itinerary Designer Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="max-width: 860px; margin: 10px auto;">
+    <div class="section-header">
+        <div>
+            <span class="tag" style="background: #fee2e2; color: #991b1b; margin-bottom: 6px;">Nearby Attractions Management</span>
+            <h1>{{ heading }}</h1>
+            <p style="color: var(--muted); font-size: 1rem;">
+                Configure nearby visiting places, visiting durations, distances, entry fees, and destination pairings.
+            </p>
+        </div>
+        <a href="{{ url_for('admin_dashboard', tab='nearby') }}" class="btn sm">← Back to Nearby Places</a>
+    </div>
+
+    <div class="form-shell">
+        <form method="post" action="{{ action }}" class="grid" data-loading>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div class="form-grid">
+                <!-- Place Name -->
+                <label class="field">
+                    <span>Place / Attraction Name *</span>
+                    <input type="text" name="name" maxlength="120" value="{{ place.get('name', '') }}" placeholder="e.g. Solang Valley / Rohtang Pass" required>
+                </label>
+
+                <!-- Assigned Destination -->
+                <label class="field">
+                    <span>Associated Destination *</span>
+                    <select name="destination_id" required>
+                        <option value="">-- Select Destination --</option>
+                        {% for dest in destinations %}
+                            <option value="{{ dest.id }}" {% if place.get('destination_id')|string == dest.id|string %}selected{% endif %}>
+                                {{ dest.name }} ({{ dest.state }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <!-- Location / Address -->
+                <label class="field">
+                    <span>Location / Address</span>
+                    <input type="text" name="location" maxlength="200" value="{{ place.get('location', '') }}" placeholder="e.g. Solang Valley, Manali, HP">
+                </label>
+
+                <!-- Estimated Visiting Time -->
+                <label class="field">
+                    <span>Estimated Visiting Time *</span>
+                    <input type="text" name="visiting_time" maxlength="40" value="{{ place.get('visiting_time', '2-3 hours') }}" placeholder="e.g. 2-3 hours / 1 hour" required>
+                </label>
+
+                <!-- Distance -->
+                <label class="field">
+                    <span>Distance from Main Destination</span>
+                    <input type="text" name="distance" maxlength="80" value="{{ place.get('distance', '') }}" placeholder="e.g. 14 km from Manali Base">
+                </label>
+
+                <!-- Entry Fee -->
+                <label class="field">
+                    <span>Entry Fee (INR, 0 if Free)</span>
+                    <input type="number" name="entry_fee" min="0" step="any" value="{{ place.get('entry_fee', 0)|int if place.get('entry_fee') is not none else 0 }}">
+                </label>
+
+                <!-- Best Time to Visit -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Best Time to Visit</span>
+                    <input type="text" name="best_time" maxlength="100" value="{{ place.get('best_time', '') }}" placeholder="e.g. April to June, October to December">
+                </label>
+
+                <!-- Image URL -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Attraction Image URL or Static Path</span>
+                    <input type="text" name="image_url" maxlength="500" value="{{ place.get('image_url', '') }}" placeholder="e.g. /static/images/destinations/triund_ridge.jpg or https://images.unsplash.com/...">
+                </label>
+
+                <!-- Description -->
+                <label class="field" style="grid-column: 1 / -1;">
+                    <span>Attraction Description & Highlights *</span>
+                    <textarea name="description" rows="4" maxlength="1500" required placeholder="Describe key highlights, activities, photography viewpoints, and visiting advice...">{{ place.get('description', '') }}</textarea>
+                </label>
+            </div>
+
+            <div class="cta-row" style="margin-top: 24px;">
+                <button class="btn accent" type="submit" style="padding: 12px 28px;">💾 Save Nearby Attraction</button>
+                <a href="{{ url_for('admin_dashboard', tab='nearby') }}" class="btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

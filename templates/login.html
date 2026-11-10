@@ -1,21 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}Sign In | Himalayan Travel Itinerary Designer{% endblock %}
+{% block title %}Sign In | Itinerary Designer{% endblock %}
 
 {% block content %}
 <div class="auth-wrapper">
     <!-- Left Hero Banner -->
     <div class="auth-banner">
         <div>
-            <span class="tag" style="background: rgba(255,255,255,0.2); color:#fff; margin-bottom: 14px;">Himalayan Expedition Planner</span>
-            <h2>Craft Your Dream Himalayan Journey</h2>
-            <p>Tailored high-altitude itineraries, mountain weather forecasts, curated authentic homestays & hotels, and interactive terrain maps.</p>
+            <span class="tag" style="background: rgba(255,255,255,0.2); color:#fff; margin-bottom: 14px;">Smart Travel Planner</span>
+            <h2>Craft Your Dream Travel Journey</h2>
+            <p>Tailored destination itineraries, weather forecasts, curated hotels & homestays, nearby tourist attractions, and interactive maps.</p>
             
             <ul class="auth-features-list">
-                <li><span>🏔️</span> <strong>Handcrafted Trek & Tour Templates</strong></li>
-                <li><span>🏡</span> <strong>Nearby Verified Homestays & Alpine Hotels</strong></li>
-                <li><span>🌦️</span> <strong>Live Weather Forecast & Safety Advisories</strong></li>
-                <li><span>🗺️</span> <strong>Interactive Maps with Relief Topography</strong></li>
+                <li><span>🗺️</span> <strong>Handcrafted Tour & Sightseeing Itineraries</strong></li>
+                <li><span>🏨</span> <strong>Verified Hotels, Homestays & Resorts</strong></li>
+                <li><span>📍</span> <strong>Nearby Attractions & Visiting Times</strong></li>
+                <li><span>🌦️</span> <strong>Live Weather Forecasts & Mountain Advisories</strong></li>
             </ul>
         </div>
         
@@ -27,7 +27,7 @@
     <!-- Right Login Form -->
     <div class="auth-form-side">
         <h1>Welcome Back</h1>
-        <p class="subtitle">Sign in to access your saved itineraries and personalized Himalayan guides.</p>
+        <p class="subtitle">Sign in to access your saved itineraries and personalized travel guides.</p>
 
         {% if error %}
             <div class="error-banner" role="alert">⚠️ {{ error }}</div>
