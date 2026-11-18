@@ -540,3 +540,426 @@ DESTINATION_PRESETS = {
         ],
     },
 }
+
+
+# =============================================================================
+# DESTINATION EXPENSE GUIDE
+# Per-person estimated costs for each destination and its nearby attractions.
+# Used to build the "Estimated Trip Cost Guide" section on the destination page.
+# =============================================================================
+
+DESTINATION_EXPENSE_GUIDE = {
+    "tungnath-chandrashila": {
+        "destination_name": "Tungnath & Chandrashila",
+        "per_person_note": "Estimated costs are per person for a 4-day trip from Rishikesh.",
+        "summary": {
+            "budget_range": "₹10,000 – ₹18,000",
+            "per_day_avg": "₹2,500 – ₹4,500",
+        },
+        "categories": [
+            {
+                "category": "🚗 Transport / Travel",
+                "items": [
+                    {"name": "Rishikesh → Chopta (Shared Cab/Tempo)", "cost_min": 600, "cost_max": 900, "note": "Shared jeep one way"},
+                    {"name": "Rishikesh → Chopta (Private Cab)", "cost_min": 2500, "cost_max": 3500, "note": "Full cab, one way"},
+                    {"name": "Return Transport (Chopta → Rishikesh)", "cost_min": 600, "cost_max": 3500, "note": "Shared or private"},
+                    {"name": "Local Chopta to Deoria Tal Jeep", "cost_min": 300, "cost_max": 500, "note": "Per person shared"},
+                ],
+            },
+            {
+                "category": "🏨 Accommodation (per night)",
+                "items": [
+                    {"name": "Budget Guesthouse / Dhaba Rooms", "cost_min": 500, "cost_max": 1200, "note": "Basic shared bath"},
+                    {"name": "Local Homestay (Recommended)", "cost_min": 1800, "cost_max": 2500, "note": "Meal included"},
+                    {"name": "Alpine Resort / Swiss Camps", "cost_min": 2800, "cost_max": 4500, "note": "Premium, full board"},
+                ],
+            },
+            {
+                "category": "🍽️ Food & Dining",
+                "items": [
+                    {"name": "Pahadi Thali (Lunch / Dinner)", "cost_min": 150, "cost_max": 350, "note": "Per meal at dhabas"},
+                    {"name": "Morning Chai + Breakfast", "cost_min": 80, "cost_max": 200, "note": "Per person"},
+                    {"name": "Trek Packed Snacks / Energy Bars", "cost_min": 200, "cost_max": 400, "note": "Per day on trail"},
+                ],
+            },
+            {
+                "category": "🎟️ Sightseeing & Nearby Places",
+                "items": [
+                    {"name": "Tungnath Temple Trek (Chopta to Temple)", "cost_min": 0, "cost_max": 0, "note": "Free — no entry fee"},
+                    {"name": "Chandrashila Summit Trek", "cost_min": 0, "cost_max": 0, "note": "Free — no entry fee"},
+                    {"name": "Deoria Tal Entry Fee", "cost_min": 100, "cost_max": 150, "note": "Forest dept. ticket"},
+                    {"name": "Deoria Tal Trek Guide (Optional)", "cost_min": 400, "cost_max": 700, "note": "Local guide per trip"},
+                    {"name": "Kanchula Kharak Musk Deer Sanctuary", "cost_min": 100, "cost_max": 200, "note": "Entry fee per person"},
+                    {"name": "Chopta Meadows Walk", "cost_min": 0, "cost_max": 0, "note": "Free — open meadow"},
+                    {"name": "Ukhimath Village Excursion", "cost_min": 100, "cost_max": 300, "note": "Auto/cab local"},
+                    {"name": "Baniyakund Forest Trail", "cost_min": 0, "cost_max": 100, "note": "Nominal permit"},
+                ],
+            },
+            {
+                "category": "🧗 Adventure & Guides",
+                "items": [
+                    {"name": "Certified Trek Guide (Full 4-Day)", "cost_min": 1500, "cost_max": 3000, "note": "Recommended at Chandrashila"},
+                    {"name": "Porter (Optional Baggage Carrier)", "cost_min": 800, "cost_max": 1500, "note": "Per day"},
+                    {"name": "Crampons / Microspike Rental", "cost_min": 150, "cost_max": 300, "note": "If snow on trail"},
+                    {"name": "Walking Pole Rental", "cost_min": 50, "cost_max": 100, "note": "Per day at Chopta"},
+                ],
+            },
+        ],
+        "budget_tips": [
+            "Book shared cabs from Rishikesh ISBT for significant savings over private taxis.",
+            "Carry your own dry snacks and water filter — dhabas on trail can be costly.",
+            "Deoria Tal is best visited early morning to avoid crowds and fee uncertainty.",
+            "November snow season may require extra ₹500 for crampons — always ask locally.",
+        ],
+    },
+
+    "badrinath": {
+        "destination_name": "Badrinath & Mana Valley",
+        "per_person_note": "Estimated costs per person for a 4-day pilgrimage trip from Rishikesh.",
+        "summary": {
+            "budget_range": "₹11,000 – ₹20,000",
+            "per_day_avg": "₹2,750 – ₹5,000",
+        },
+        "categories": [
+            {
+                "category": "🚗 Transport / Travel",
+                "items": [
+                    {"name": "Rishikesh → Joshimath (Bus/Shared Cab)", "cost_min": 400, "cost_max": 700, "note": "Per person, 8–10 hrs"},
+                    {"name": "Rishikesh → Joshimath (Private Cab)", "cost_min": 3000, "cost_max": 5000, "note": "Full vehicle"},
+                    {"name": "Joshimath → Badrinath (Shared/Local)", "cost_min": 150, "cost_max": 300, "note": "Per person, 2 hrs"},
+                    {"name": "Local Sightseeing Cab in Badrinath", "cost_min": 500, "cost_max": 1200, "note": "Per day"},
+                    {"name": "Badrinath → Mana Village (Auto)", "cost_min": 50, "cost_max": 150, "note": "3 km, shared auto"},
+                ],
+            },
+            {
+                "category": "🏨 Accommodation (per night)",
+                "items": [
+                    {"name": "GMVN Tourist Rest House (Badrinath)", "cost_min": 800, "cost_max": 1800, "note": "Government run, clean"},
+                    {"name": "Pilgrim Dharamshala / Ashram", "cost_min": 200, "cost_max": 600, "note": "Basic facilities"},
+                    {"name": "Local Guesthouse at Badrinath", "cost_min": 1200, "cost_max": 2500, "note": "Standard room"},
+                    {"name": "Heritage Lodge / Homestay Joshimath", "cost_min": 1900, "cost_max": 3200, "note": "Recommended base"},
+                    {"name": "Luxury Hotel (Sarovar Portico type)", "cost_min": 5000, "cost_max": 8000, "note": "Premium, centrally heated"},
+                ],
+            },
+            {
+                "category": "🍽️ Food & Dining",
+                "items": [
+                    {"name": "Temple Prasad & Bhog", "cost_min": 50, "cost_max": 200, "note": "Donation-based"},
+                    {"name": "Pure Veg Thali at Local Restaurant", "cost_min": 120, "cost_max": 300, "note": "Per meal"},
+                    {"name": "Chai + Parathas (Breakfast)", "cost_min": 80, "cost_max": 180, "note": "Per person"},
+                ],
+            },
+            {
+                "category": "🎟️ Sightseeing & Nearby Places",
+                "items": [
+                    {"name": "Badrinath Temple Darshan (Free Que)", "cost_min": 0, "cost_max": 0, "note": "No entry fee"},
+                    {"name": "Badrinath Special Darshan Pass", "cost_min": 150, "cost_max": 300, "note": "Skip-the-line ticket"},
+                    {"name": "Tapt Kund Holy Dip", "cost_min": 0, "cost_max": 0, "note": "Free — natural hot spring"},
+                    {"name": "Mana Village Walk", "cost_min": 0, "cost_max": 0, "note": "Free — open village"},
+                    {"name": "Vyas Gufa Entry (Mana)", "cost_min": 20, "cost_max": 50, "note": "Nominal fee"},
+                    {"name": "Bhim Pul (Mana)", "cost_min": 0, "cost_max": 0, "note": "Free access"},
+                    {"name": "Vasudhara Falls Trek (5 km each way)", "cost_min": 0, "cost_max": 0, "note": "Free — no permit"},
+                    {"name": "Vasudhara Falls Local Guide", "cost_min": 500, "cost_max": 1000, "note": "Strongly advised"},
+                    {"name": "Neelkanth Peak Viewpoint", "cost_min": 0, "cost_max": 0, "note": "Free — visible from town"},
+                    {"name": "Charan Paduka (Footprint Rock)", "cost_min": 0, "cost_max": 0, "note": "1 km trek, free"},
+                    {"name": "Mata Murty Temple", "cost_min": 0, "cost_max": 0, "note": "Free entry"},
+                ],
+            },
+            {
+                "category": "🛍️ Shopping & Offerings",
+                "items": [
+                    {"name": "Pooja Samagri / Puja Items", "cost_min": 100, "cost_max": 500, "note": "Per pooja kit"},
+                    {"name": "Himalayan Herbs & Local Products", "cost_min": 200, "cost_max": 1000, "note": "Joshimath market"},
+                    {"name": "Wool Shawl / Pashmina from Mana", "cost_min": 500, "cost_max": 2000, "note": "Bhotia weave"},
+                ],
+            },
+        ],
+        "budget_tips": [
+            "GMVN guesthouses offer excellent value — book well in advance as they fill up fast in pilgrimage season.",
+            "Carry cash — ATMs in Badrinath often run dry during peak season (May–June).",
+            "Vasudhara Falls trail can get slippery near the top — hiring a local guide is worth the ₹500.",
+            "Mana Village has India's last tea stall — budget ₹150 for a historic cuppa!",
+        ],
+    },
+
+    "hemkund-sahib-valley-of-flowers": {
+        "destination_name": "Hemkund Sahib & Valley of Flowers",
+        "per_person_note": "Estimated costs per person for a 5-day trek from Govindghat.",
+        "summary": {
+            "budget_range": "₹14,000 – ₹26,000",
+            "per_day_avg": "₹2,800 – ₹5,200",
+        },
+        "categories": [
+            {
+                "category": "🚗 Transport / Travel",
+                "items": [
+                    {"name": "Rishikesh → Govindghat (Bus)", "cost_min": 350, "cost_max": 500, "note": "GMOU/ISBT daily bus"},
+                    {"name": "Rishikesh → Govindghat (Shared Cab)", "cost_min": 600, "cost_max": 900, "note": "Per person"},
+                    {"name": "Govindghat → Pulna (Jeep/Walk)", "cost_min": 50, "cost_max": 200, "note": "4 km, taxi optional"},
+                    {"name": "Return Transport", "cost_min": 350, "cost_max": 900, "note": "Bus or shared cab"},
+                ],
+            },
+            {
+                "category": "🏨 Accommodation (per night)",
+                "items": [
+                    {"name": "Govindghat Hotel / Guesthouse", "cost_min": 800, "cost_max": 2000, "note": "Night before trek"},
+                    {"name": "Ghangaria Homestay (Recommended)", "cost_min": 1500, "cost_max": 2800, "note": "Meals + room"},
+                    {"name": "Ghangaria GMVN Guesthouse", "cost_min": 700, "cost_max": 1500, "note": "Government dormitory"},
+                    {"name": "Ghangaria Mid-Range Hotel", "cost_min": 2000, "cost_max": 4000, "note": "Attached bath + hot water"},
+                    {"name": "Gurudwara Free Langar Stay (Hemkund)", "cost_min": 0, "cost_max": 0, "note": "Free for all devotees"},
+                ],
+            },
+            {
+                "category": "🍽️ Food & Dining",
+                "items": [
+                    {"name": "Gurudwara Langar (Govindghat & Hemkund)", "cost_min": 0, "cost_max": 0, "note": "Free community kitchen"},
+                    {"name": "Dhabas on Trek Trail (Pulna to Ghangaria)", "cost_min": 150, "cost_max": 400, "note": "Per meal"},
+                    {"name": "Ghangaria Restaurants", "cost_min": 200, "cost_max": 500, "note": "Limited options, pricier"},
+                    {"name": "Trek Energy Snacks & Dry Fruits", "cost_min": 300, "cost_max": 600, "note": "Per day — carry from Rishikesh"},
+                ],
+            },
+            {
+                "category": "🎟️ Sightseeing & Nearby Places",
+                "items": [
+                    {"name": "Valley of Flowers National Park Entry", "cost_min": 150, "cost_max": 150, "note": "INR 150 per person/day"},
+                    {"name": "Valley of Flowers Camera Fee", "cost_min": 100, "cost_max": 200, "note": "Still/video camera"},
+                    {"name": "Hemkund Sahib Gurudwara & Lake", "cost_min": 0, "cost_max": 0, "note": "Free — no entry fee"},
+                    {"name": "Govindghat to Ghangaria Trek (10 km)", "cost_min": 0, "cost_max": 0, "note": "Free trail, no permit"},
+                    {"name": "Ghangaria to VOF Entry Point Trek", "cost_min": 0, "cost_max": 0, "note": "3 km free trail"},
+                    {"name": "Ghangaria to Hemkund Trek (6 km)", "cost_min": 0, "cost_max": 0, "note": "Free trail, steep"},
+                    {"name": "Lokpal Lake (Hemkund)", "cost_min": 0, "cost_max": 0, "note": "Free — sacred lake"},
+                    {"name": "Pushpawati River Viewpoints", "cost_min": 0, "cost_max": 0, "note": "Along the trail, free"},
+                ],
+            },
+            {
+                "category": "🧗 Adventure & Guides",
+                "items": [
+                    {"name": "Trek Guide (Ghangaria to Hemkund)", "cost_min": 800, "cost_max": 1500, "note": "Per trip, strongly advised"},
+                    {"name": "Mule / Pony Ride (Govindghat–Ghangaria)", "cost_min": 1200, "cost_max": 2000, "note": "One way per person"},
+                    {"name": "Helicopter (Govindghat → Ghangaria)", "cost_min": 3500, "cost_max": 5000, "note": "Per person one way — seasonal"},
+                    {"name": "Porter for Trek Bags", "cost_min": 700, "cost_max": 1200, "note": "Per day"},
+                    {"name": "Walking Sticks / Poles Rental", "cost_min": 50, "cost_max": 100, "note": "Available at Pulna"},
+                ],
+            },
+        ],
+        "budget_tips": [
+            "Valley of Flowers entry ticket is charged per day — plan to visit on 1-2 days max.",
+            "The Gurudwara Langar at Govindghat and Hemkund provides excellent free meals — no need to skip.",
+            "Helicopter service (seasonal) to Ghangaria saves 5 hrs of trek — worth it for senior travelers.",
+            "Buy dry fruits and energy snacks at Rishikesh — Ghangaria shops charge 2–3x the market price.",
+            "Mules are available but pricey — healthy trekkers should walk to save ₹1,500.",
+        ],
+    },
+
+    "mussoorie": {
+        "destination_name": "Mussoorie & Landour",
+        "per_person_note": "Estimated costs per person for a 3-day leisure trip.",
+        "summary": {
+            "budget_range": "₹7,000 – ₹15,000",
+            "per_day_avg": "₹2,300 – ₹5,000",
+        },
+        "categories": [
+            {
+                "category": "🚗 Transport / Travel",
+                "items": [
+                    {"name": "Dehradun → Mussoorie (Shared Cab)", "cost_min": 60, "cost_max": 120, "note": "Per person, frequent"},
+                    {"name": "Dehradun → Mussoorie (Private Cab)", "cost_min": 500, "cost_max": 900, "note": "Full vehicle"},
+                    {"name": "Local Auto / E-Rickshaw (Mussoorie town)", "cost_min": 50, "cost_max": 200, "note": "Per ride"},
+                    {"name": "Mussoorie to Kempty Falls Taxi", "cost_min": 300, "cost_max": 600, "note": "13 km, return shared"},
+                    {"name": "Mussoorie to George Everest Cab", "cost_min": 200, "cost_max": 500, "note": "One way, 6 km"},
+                ],
+            },
+            {
+                "category": "🏨 Accommodation (per night)",
+                "items": [
+                    {"name": "Budget Guesthouse (Library Chowk)", "cost_min": 700, "cost_max": 1500, "note": "Basic room"},
+                    {"name": "Homestay (Mid-range)", "cost_min": 1800, "cost_max": 3000, "note": "Meals included often"},
+                    {"name": "Heritage Hotel (Landour type)", "cost_min": 4500, "cost_max": 9000, "note": "Colonial charm"},
+                    {"name": "Eco Lodge / Forest Resort", "cost_min": 3000, "cost_max": 5000, "note": "Away from crowds"},
+                ],
+            },
+            {
+                "category": "🍽️ Food & Dining",
+                "items": [
+                    {"name": "Char Dukan Pancakes (Landour)", "cost_min": 150, "cost_max": 350, "note": "Per person"},
+                    {"name": "Cafe / Restaurant (Mall Road)", "cost_min": 200, "cost_max": 600, "note": "Per meal"},
+                    {"name": "Maggi & Chai (Hill cafes)", "cost_min": 60, "cost_max": 150, "note": "Per serving"},
+                    {"name": "Prakash Jam & Cheese Shop (Landour)", "cost_min": 300, "cost_max": 800, "note": "Must-buy artisan items"},
+                ],
+            },
+            {
+                "category": "🎟️ Sightseeing & Nearby Places",
+                "items": [
+                    {"name": "Lal Tibba Viewpoint Entry", "cost_min": 50, "cost_max": 100, "note": "Nominal fee"},
+                    {"name": "Lal Tibba Telescope (10 min view)", "cost_min": 50, "cost_max": 100, "note": "Per use"},
+                    {"name": "Kempty Falls Entry", "cost_min": 50, "cost_max": 80, "note": "Forest dept. ticket"},
+                    {"name": "Kempty Falls Rope Car / Chair Lift", "cost_min": 100, "cost_max": 200, "note": "One way"},
+                    {"name": "George Everest Estate Walk", "cost_min": 100, "cost_max": 200, "note": "Entry donation"},
+                    {"name": "Camel's Back Road Walk", "cost_min": 0, "cost_max": 0, "note": "Free 3 km nature trail"},
+                    {"name": "Christ Church Heritage Lane", "cost_min": 0, "cost_max": 0, "note": "Free — open to all"},
+                    {"name": "Company Garden Entry", "cost_min": 50, "cost_max": 100, "note": "Per person"},
+                    {"name": "Jharipani Falls Hike", "cost_min": 0, "cost_max": 0, "note": "Free trail, 3 km"},
+                    {"name": "Mussoorie Lake Boating", "cost_min": 100, "cost_max": 200, "note": "Per person per ride"},
+                    {"name": "Dhanaulti Eco Park (Day Trip)", "cost_min": 150, "cost_max": 200, "note": "Entry + 25 km cab extra"},
+                ],
+            },
+            {
+                "category": "🛍️ Shopping",
+                "items": [
+                    {"name": "Tibetan Market (Woolen & Handicraft)", "cost_min": 200, "cost_max": 2000, "note": "Budget depending on purchases"},
+                    {"name": "Landour Artisan Bakery Items", "cost_min": 100, "cost_max": 500, "note": "Baked goods & jams"},
+                    {"name": "Local Fruit Jam / Squash Bottles", "cost_min": 150, "cost_max": 400, "note": "Per bottle, good souvenir"},
+                ],
+            },
+        ],
+        "budget_tips": [
+            "Shared cabs from Dehradun's Gandhi Road are very frequent and cheap — avoid private taxis.",
+            "Mall Road restaurants charge premium rates — eat at smaller cafes 1–2 lanes back for half the price.",
+            "Kempty Falls is very crowded on weekends — visit early morning or on a weekday.",
+            "Char Dukan in Landour opens at 7:30 AM — arrive early for the best ginger pancakes.",
+            "Dhanaulti (25 km) makes an excellent day trip — hire a car for ₹1,200–1,800 for the full day.",
+        ],
+    },
+
+    "triund-trek": {
+        "destination_name": "Triund Trek & McLeod Ganj",
+        "per_person_note": "Estimated costs per person for a 3-day trek-and-culture trip.",
+        "summary": {
+            "budget_range": "₹8,000 – ₹16,000",
+            "per_day_avg": "₹2,700 – ₹5,300",
+        },
+        "categories": [
+            {
+                "category": "🚗 Transport / Travel",
+                "items": [
+                    {"name": "Delhi → Dharamshala (Volvo Night Bus)", "cost_min": 700, "cost_max": 1500, "note": "Per person, 12 hrs"},
+                    {"name": "Dharamshala → McLeod Ganj (Local Bus)", "cost_min": 15, "cost_max": 30, "note": "Per person, 20 min"},
+                    {"name": "McLeod Ganj → Dharamkot (Auto)", "cost_min": 50, "cost_max": 100, "note": "2 km, trek start point"},
+                    {"name": "Local Rickshaw / Taxi McLeod Ganj", "cost_min": 60, "cost_max": 200, "note": "Per ride"},
+                    {"name": "McLeod Ganj → Bhagsu (Auto / Walk)", "cost_min": 30, "cost_max": 80, "note": "2 km, walkable"},
+                ],
+            },
+            {
+                "category": "🏨 Accommodation (per night)",
+                "items": [
+                    {"name": "Dharamkot Budget Hostel / Guesthouse", "cost_min": 300, "cost_max": 800, "note": "Backpacker dorms"},
+                    {"name": "McLeod Ganj Guesthouse", "cost_min": 700, "cost_max": 2000, "note": "Private room"},
+                    {"name": "Boutique Homestay (Dhauladhar type)", "cost_min": 1500, "cost_max": 2500, "note": "Meals often included"},
+                    {"name": "Triund Top Camping (Forest Dept.)", "cost_min": 150, "cost_max": 300, "note": "Official campsite fee"},
+                    {"name": "Triund Alpine Camps (Tent + Meals)", "cost_min": 1200, "cost_max": 2000, "note": "All-inclusive tent stay"},
+                    {"name": "Boutique Hotel (McLeod Ganj Center)", "cost_min": 3000, "cost_max": 6000, "note": "Premium stay"},
+                ],
+            },
+            {
+                "category": "🍽️ Food & Dining",
+                "items": [
+                    {"name": "Tibetan Momos (10 pieces)", "cost_min": 60, "cost_max": 120, "note": "Best budget meal"},
+                    {"name": "Thukpa / Tibetan Noodle Soup", "cost_min": 80, "cost_max": 180, "note": "Per bowl"},
+                    {"name": "Israeli/Western Cafe Meal", "cost_min": 200, "cost_max": 500, "note": "Dharamkot cafes"},
+                    {"name": "Triund Top Dhabas (Trail food)", "cost_min": 100, "cost_max": 250, "note": "Limited options on ridge"},
+                    {"name": "Bhagsu Nag Café (Post-falls chai)", "cost_min": 60, "cost_max": 150, "note": "Per person"},
+                ],
+            },
+            {
+                "category": "🎟️ Sightseeing & Nearby Places",
+                "items": [
+                    {"name": "Triund Trek Trail (Dharamkot to Ridge)", "cost_min": 0, "cost_max": 0, "note": "Free trail — no entry fee"},
+                    {"name": "Triund Overnight Forest Dept. Permit", "cost_min": 150, "cost_max": 200, "note": "Per person if camping"},
+                    {"name": "Namgyal Monastery (Dalai Lama Temple)", "cost_min": 0, "cost_max": 0, "note": "Free entry"},
+                    {"name": "Bhagsu Nag Waterfall Trail", "cost_min": 0, "cost_max": 0, "note": "Free — 2 km walk"},
+                    {"name": "Bhagsu Nag Temple", "cost_min": 0, "cost_max": 0, "note": "Free — open temple"},
+                    {"name": "Dharamshala Cricket Stadium View", "cost_min": 0, "cost_max": 0, "note": "Match entry separate"},
+                    {"name": "Tibetan Museum McLeod Ganj", "cost_min": 30, "cost_max": 50, "note": "Entry fee"},
+                    {"name": "Tibet Museum (Atrocity Documentation)", "cost_min": 0, "cost_max": 0, "note": "Free entry"},
+                    {"name": "Dal Lake Dharamshala (5 km from McLeod)", "cost_min": 0, "cost_max": 50, "note": "Free lake, cab extra"},
+                    {"name": "Illaqa Trek (Snow Line, 2 km above Triund)", "cost_min": 0, "cost_max": 0, "note": "Free extension, guide advised"},
+                    {"name": "Gallu Devi Temple (Triund Trailhead)", "cost_min": 0, "cost_max": 0, "note": "Free entry"},
+                ],
+            },
+            {
+                "category": "🧗 Adventure & Guides",
+                "items": [
+                    {"name": "Trek Guide (Dharamkot to Triund)", "cost_min": 500, "cost_max": 1000, "note": "Not mandatory but helpful"},
+                    {"name": "Sleeping Bag Rental (For Triund Night)", "cost_min": 150, "cost_max": 300, "note": "Available at Dharamkot"},
+                    {"name": "Walking Pole Rental", "cost_min": 50, "cost_max": 100, "note": "Per pole per day"},
+                ],
+            },
+            {
+                "category": "🛍️ Shopping & Culture",
+                "items": [
+                    {"name": "Tibetan Handicraft Market", "cost_min": 200, "cost_max": 2000, "note": "Thangka, prayer flags, etc."},
+                    {"name": "Himalayan Tea / Local Honey", "cost_min": 150, "cost_max": 500, "note": "Per packet"},
+                    {"name": "Hand-painted Tibetan Mugs / Items", "cost_min": 100, "cost_max": 500, "note": "Per piece"},
+                ],
+            },
+        ],
+        "budget_tips": [
+            "Night Volvo from Delhi (ISBT Kashmere Gate) is the best value transport — book 2 weeks early.",
+            "Carry your own sleeping bag for Triund camping — rented ones are not always clean.",
+            "Dharamkot cafes (Moonpeak, Dylan's) have excellent value-for-money toasted sandwiches.",
+            "Forest Dept. permits for Triund camping are strictly enforced — always buy them at the counter.",
+            "Bhagsu Waterfall is 15 min walk from McLeod — skip the auto and walk to save ₹80.",
+        ],
+    },
+
+    "kasauli": {
+        "destination_name": "Kasauli Heritage & Forest Trails",
+        "per_person_note": "Estimated costs per person for a 2-day leisure heritage trip.",
+        "summary": {
+            "budget_range": "₹5,500 – ₹11,000",
+            "per_day_avg": "₹2,750 – ₹5,500",
+        },
+        "categories": [
+            {
+                "category": "🚗 Transport / Travel",
+                "items": [
+                    {"name": "Chandigarh → Kasauli (Bus/Cab)", "cost_min": 150, "cost_max": 500, "note": "Per person, 50 km, 1.5 hrs"},
+                    {"name": "Delhi → Kasauli (Volvo to Chandigarh + cab)", "cost_min": 650, "cost_max": 1200, "note": "Total per person"},
+                    {"name": "Local Auto / E-Rickshaw (Kasauli town)", "cost_min": 50, "cost_max": 150, "note": "Per ride"},
+                    {"name": "Kasauli to Chail Day Trip (Cab)", "cost_min": 1500, "cost_max": 2500, "note": "Full private cab return"},
+                ],
+            },
+            {
+                "category": "🏨 Accommodation (per night)",
+                "items": [
+                    {"name": "Budget Guesthouse / Forest Rest House", "cost_min": 800, "cost_max": 1500, "note": "Basic clean room"},
+                    {"name": "Heritage Homestay (Colonial Bungalow)", "cost_min": 2000, "cost_max": 3500, "note": "Recommended experience"},
+                    {"name": "Mid-range Hotel (Near Mall Road)", "cost_min": 2500, "cost_max": 4500, "note": "Good amenities"},
+                    {"name": "Luxury Resort (Kasauli Resort type)", "cost_min": 4000, "cost_max": 8000, "note": "Premium valley views"},
+                ],
+            },
+            {
+                "category": "🍽️ Food & Dining",
+                "items": [
+                    {"name": "Local Dhaba Meal (Himachali Thali)", "cost_min": 100, "cost_max": 250, "note": "Per person"},
+                    {"name": "Cafe / Restaurant (Mall Road)", "cost_min": 200, "cost_max": 500, "note": "Per meal"},
+                    {"name": "Morning Chai + Omelette Breakfast", "cost_min": 60, "cost_max": 150, "note": "Per person"},
+                    {"name": "Kasauli Brewery Tour + Tasting", "cost_min": 300, "cost_max": 700, "note": "Advance booking required"},
+                ],
+            },
+            {
+                "category": "🎟️ Sightseeing & Nearby Places",
+                "items": [
+                    {"name": "Gilbert Nature Trail Walk", "cost_min": 0, "cost_max": 0, "note": "Free — open trail"},
+                    {"name": "Christ Church Heritage Lane", "cost_min": 0, "cost_max": 0, "note": "Free — open daily"},
+                    {"name": "Sunset Point (Lover's Lane)", "cost_min": 0, "cost_max": 0, "note": "Free access"},
+                    {"name": "Monkey Point (Highest in Kasauli)", "cost_min": 0, "cost_max": 0, "note": "Army area — carry ID"},
+                    {"name": "Manki Point / Temple Hike", "cost_min": 0, "cost_max": 0, "note": "Free — 2 km trail"},
+                    {"name": "Kasauli Club (Heritage Bar, Members Only)", "cost_min": 500, "cost_max": 1500, "note": "Guest fee if allowed"},
+                    {"name": "Chail Hill Station Day Trip (45 km)", "cost_min": 50, "cost_max": 100, "note": "Entry fee, cab extra"},
+                    {"name": "Chail Cricket Ground (World's Highest)", "cost_min": 50, "cost_max": 100, "note": "Entry fee"},
+                    {"name": "Chail Wildlife Sanctuary Entry", "cost_min": 100, "cost_max": 150, "note": "Per person"},
+                    {"name": "Dagshai Jail Museum (8 km)", "cost_min": 20, "cost_max": 50, "note": "Entry fee"},
+                    {"name": "Barog Forest Trail (8 km)", "cost_min": 0, "cost_max": 0, "note": "Free — peaceful forest"},
+                ],
+            },
+        ],
+        "budget_tips": [
+            "Kasauli is a small town — most sightseeing is walkable. Save cab money by staying near Mall Road.",
+            "Monkey Point requires Indian Defence ID — foreign nationals may not be permitted.",
+            "Kasauli Brewery is a unique experience — book the tour slot in advance online.",
+            "Chail makes a perfect day trip from Kasauli — rent a bike (₹500/day) or share a cab.",
+            "Gilbert Trail is best at dawn — go before 7:30 AM for birdwatching at its finest.",
+        ],
+    },
+}

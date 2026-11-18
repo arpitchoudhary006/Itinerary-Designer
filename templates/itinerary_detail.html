@@ -211,6 +211,184 @@
         </div>
     {% endif %}
 
+    <!-- ============================================================ -->
+    <!-- 💰 BUDGET PLANNER                                            -->
+    <!-- ============================================================ -->
+    <div id="budget-planner" class="budget-planner-section" style="margin-top: 40px;">
+
+        <div class="section-header" style="margin-bottom: 20px;">
+            <div>
+                <h2>💰 Budget Planner</h2>
+                <p style="color: var(--muted); font-size: 0.95rem;">
+                    Record your actual expenses against your planned budget of
+                    <strong style="color: var(--primary-dark);">₹{{ '{:,.0f}'.format(trip.budget or 0) }}</strong>.
+                    Track hotel costs, travel, food, and more in real-time.
+                </p>
+            </div>
+        </div>
+
+        <!-- Budget Overview Cards -->
+        <div class="budget-overview-grid">
+            <div class="budget-stat-card budget-total-card">
+                <span class="budget-stat-label">🎯 Planned Budget</span>
+                <span class="budget-stat-value">₹{{ '{:,.0f}'.format(trip.budget or 0) }}</span>
+            </div>
+            <div class="budget-stat-card budget-spent-card">
+                <span class="budget-stat-label">💸 Total Spent</span>
+                <span class="budget-stat-value">₹{{ '{:,.0f}'.format(total_spent) }}</span>
+            </div>
+            <div class="budget-stat-card {{ 'budget-over-card' if budget_remaining < 0 else 'budget-remaining-card' }}">
+                <span class="budget-stat-label">{{ '⚠️ Over Budget' if budget_remaining < 0 else '✅ Remaining' }}</span>
+                <span class="budget-stat-value">₹{{ '{:,.0f}'.format(budget_remaining | abs) }}</span>
+            </div>
+            <div class="budget-stat-card budget-pct-card">
+                <span class="budget-stat-label">📊 Budget Used</span>
+                <span class="budget-stat-value">{{ budget_pct }}%</span>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="budget-progress-wrap">
+            <div class="budget-progress-bar-track">
+                <div class="budget-progress-bar-fill {{ 'budget-bar-danger' if budget_pct > 90 else ('budget-bar-warn' if budget_pct > 70 else 'budget-bar-safe') }}"
+                     style="width: {{ [budget_pct, 100] | min }}%;">
+                    {% if budget_pct > 10 %}<span>{{ budget_pct }}% used</span>{% endif %}
+                </div>
+            </div>
+            {% if budget_remaining < 0 %}
+                <p class="budget-over-msg">⚠️ You are ₹{{ '{:,.0f}'.format(budget_remaining | abs) }} over your planned budget.</p>
+            {% elif budget_pct >= 90 %}
+                <p class="budget-warn-msg">🔔 Almost at the budget limit — only ₹{{ '{:,.0f}'.format(budget_remaining) }} remaining.</p>
+            {% else %}
+                <p class="budget-ok-msg">You have ₹{{ '{:,.0f}'.format(budget_remaining) }} left to spend within your planned limit.</p>
+            {% endif %}
+        </div>
+
+        <!-- Category Breakdown (if any expenses exist) -->
+        {% if category_totals %}
+        <div class="budget-category-breakdown">
+            <h4 style="font-size: 0.95rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">Expense Breakdown by Category</h4>
+            <div class="budget-category-grid">
+                {% set cat_icons = {
+                    'Hotel / Accommodation': '🏨',
+                    'Transport / Travel': '🚗',
+                    'Food & Dining': '🍽️',
+                    'Sightseeing / Entry Fees': '🎟️',
+                    'Adventure Activities': '🧗',
+                    'Shopping': '🛍️',
+                    'Medical / Insurance': '💊',
+                    'Miscellaneous': '📦'
+                } %}
+                {% for cat, amt in category_totals.items() %}
+                <div class="budget-cat-pill">
+                    <span class="budget-cat-icon">{{ cat_icons.get(cat, '📌') }}</span>
+                    <div>
+                        <div class="budget-cat-name">{{ cat }}</div>
+                        <div class="budget-cat-amt">₹{{ '{:,.0f}'.format(amt) }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Add Expense Form -->
+        <div class="budget-add-form-wrap">
+            <h4 class="budget-form-heading">➕ Record a New Expense</h4>
+            <form method="post" action="{{ url_for('budget_add_expense', itinerary_id=trip.id) }}" class="budget-add-form" data-loading>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <div class="budget-form-row">
+                    <div class="budget-field">
+                        <label>Category</label>
+                        <select name="category" required>
+                            <option value="" disabled selected>Select category…</option>
+                            <option value="Hotel / Accommodation">🏨 Hotel / Accommodation</option>
+                            <option value="Transport / Travel">🚗 Transport / Travel</option>
+                            <option value="Food & Dining">🍽️ Food &amp; Dining</option>
+                            <option value="Sightseeing / Entry Fees">🎟️ Sightseeing / Entry Fees</option>
+                            <option value="Adventure Activities">🧗 Adventure Activities</option>
+                            <option value="Shopping">🛍️ Shopping</option>
+                            <option value="Medical / Insurance">💊 Medical / Insurance</option>
+                            <option value="Miscellaneous">📦 Miscellaneous</option>
+                        </select>
+                    </div>
+                    <div class="budget-field budget-field-grow">
+                        <label>Description</label>
+                        <input type="text" name="description" placeholder="e.g. 2 nights at Hill Vista Resort" required maxlength="200">
+                    </div>
+                    <div class="budget-field budget-field-sm">
+                        <label>Amount (₹)</label>
+                        <input type="number" name="amount" placeholder="e.g. 3500" min="1" step="1" required>
+                    </div>
+                    <div class="budget-field budget-field-sm">
+                        <label>Date (optional)</label>
+                        <input type="date" name="expense_date">
+                    </div>
+                    <div class="budget-field budget-field-btn">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn primary">Add Expense</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Expense Log Table -->
+        {% if expenses %}
+        <div class="budget-log-wrap">
+            <h4 class="budget-form-heading">📋 Expense Log</h4>
+            <div class="budget-table-wrap">
+                <table class="budget-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Date</th>
+                            <th style="text-align: right;">Amount</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exp in expenses %}
+                        <tr>
+                            <td style="color: var(--muted); font-size: 0.85rem;">{{ loop.index }}</td>
+                            <td>
+                                <span class="budget-cat-tag">{{ exp.category }}</span>
+                            </td>
+                            <td>{{ exp.description }}</td>
+                            <td style="color: var(--muted); font-size: 0.88rem;">{{ exp.expense_date or '—' }}</td>
+                            <td style="text-align: right; font-weight: 700; color: var(--primary-dark);">₹{{ '{:,.0f}'.format(exp.amount) }}</td>
+                            <td>
+                                <form method="post" action="{{ url_for('budget_delete_expense', itinerary_id=trip.id, expense_id=exp.id) }}"
+                                      style="margin:0;" onsubmit="return confirm('Remove this expense?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button class="btn danger sm" type="submit" title="Remove">✕</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="budget-table-footer">
+                            <td colspan="4" style="text-align: right; font-weight: 700; color: var(--muted);">Total Recorded Expenses:</td>
+                            <td style="text-align: right; font-weight: 900; font-size: 1.1rem; color: var(--primary-dark);">₹{{ '{:,.0f}'.format(total_spent) }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="budget-empty-state">
+            <span style="font-size: 2.5rem;">💳</span>
+            <p>No expenses recorded yet. Add your first expense above to start tracking your trip costs.</p>
+        </div>
+        {% endif %}
+
+    </div>
+    <!-- END BUDGET PLANNER -->
+
     <!-- Danger Zone: Delete -->
     <div style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: flex-end;">
         <form method="post" action="{{ url_for('delete_itinerary', itinerary_id=trip.id) }}" data-loading onsubmit="return confirm('Permanently delete this itinerary? This cannot be undone.');">

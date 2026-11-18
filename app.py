@@ -44,7 +44,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from config import Config
 from models import User, get_db, init_db, now_iso, row_to_dict
-from services.data_presets import DESTINATION_PRESETS
+from services.data_presets import DESTINATION_PRESETS, DESTINATION_EXPENSE_GUIDE
 from services.weather_service import fetch_weather_forecast
 
 # Initialize Flask App
@@ -708,6 +708,9 @@ def destination_detail(slug):
         finally:
             db.close()
 
+    # Load expense guide for this destination
+    expense_guide = DESTINATION_EXPENSE_GUIDE.get(slug)
+
     return render_template(
         "destination_detail.html",
         destination=destination,
@@ -718,6 +721,7 @@ def destination_detail(slug):
         reviews=reviews,
         weather=weather,
         saved=saved,
+        expense_guide=expense_guide,
     )
 
 
@@ -962,12 +966,39 @@ def itinerary_detail(itinerary_id):
     if destination.get("latitude") and destination.get("longitude"):
         weather = fetch_weather_forecast(destination["latitude"], destination["longitude"], destination.get("name", ""))
 
+    # Fetch budget expenses for this itinerary
+    db = get_db()
+    try:
+        expense_rows = db.execute(
+            "SELECT * FROM budget_expenses WHERE itinerary_id = ? AND owner_id = ? ORDER BY created_at ASC",
+            (itinerary_id, current_user.user_id),
+        ).fetchall()
+        expenses = [dict(r) for r in expense_rows]
+    finally:
+        db.close()
+
+    # Compute totals per category
+    total_spent = sum(e["amount"] for e in expenses)
+    budget_limit = trip.get("budget") or 0
+    budget_remaining = budget_limit - total_spent
+    budget_pct = min(100, round((total_spent / budget_limit * 100) if budget_limit > 0 else 0, 1))
+
+    # Category totals
+    category_totals = {}
+    for e in expenses:
+        category_totals[e["category"]] = category_totals.get(e["category"], 0) + e["amount"]
+
     return render_template(
         "itinerary_detail.html",
         trip=trip,
         destination=destination,
         accommodation=accommodation,
         weather=weather,
+        expenses=expenses,
+        total_spent=total_spent,
+        budget_remaining=budget_remaining,
+        budget_pct=budget_pct,
+        category_totals=category_totals,
     )
 
 
@@ -1675,6 +1706,66 @@ def api_weather():
     name = request.args.get("name", "Himalayas")
     data = fetch_weather_forecast(lat, lng, name)
     return jsonify(data)
+
+
+# 20. BUDGET PLANNER — ADD EXPENSE
+@app.route("/itineraries/<int:itinerary_id>/budget/add", methods=["POST"])
+@login_required
+def budget_add_expense(itinerary_id):
+    get_owned_itinerary_or_404(itinerary_id)
+    category    = request.form.get("category", "").strip()
+    description = request.form.get("description", "").strip()
+    amount_raw  = request.form.get("amount", "0").strip()
+    expense_date = request.form.get("expense_date", "").strip()
+
+    if not category or not description:
+        flash("Category and description are required.", "error")
+        return redirect(url_for("itinerary_detail", itinerary_id=itinerary_id) + "#budget-planner")
+
+    try:
+        amount = float(amount_raw)
+        if amount <= 0:
+            raise ValueError("Amount must be positive.")
+    except ValueError:
+        flash("Please enter a valid positive amount.", "error")
+        return redirect(url_for("itinerary_detail", itinerary_id=itinerary_id) + "#budget-planner")
+
+    db = get_db()
+    try:
+        db.execute(
+            """INSERT INTO budget_expenses (itinerary_id, owner_id, category, description, amount, expense_date, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (itinerary_id, current_user.user_id, category, description,
+             amount, expense_date or None, now_iso()),
+        )
+        db.commit()
+        flash(f"Expense '{description}' (₹{amount:,.0f}) added to Budget Planner.", "success")
+    finally:
+        db.close()
+
+    return redirect(url_for("itinerary_detail", itinerary_id=itinerary_id) + "#budget-planner")
+
+
+# 21. BUDGET PLANNER — DELETE EXPENSE
+@app.route("/itineraries/<int:itinerary_id>/budget/<int:expense_id>/delete", methods=["POST"])
+@login_required
+def budget_delete_expense(itinerary_id, expense_id):
+    get_owned_itinerary_or_404(itinerary_id)
+    db = get_db()
+    try:
+        row = db.execute(
+            "SELECT * FROM budget_expenses WHERE id = ? AND itinerary_id = ? AND owner_id = ?",
+            (expense_id, itinerary_id, current_user.user_id),
+        ).fetchone()
+        if not row:
+            abort(404)
+        db.execute("DELETE FROM budget_expenses WHERE id = ?", (expense_id,))
+        db.commit()
+        flash("Expense removed from Budget Planner.", "info")
+    finally:
+        db.close()
+
+    return redirect(url_for("itinerary_detail", itinerary_id=itinerary_id) + "#budget-planner")
 
 
 # Error Handlers

@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual Environment
+venv/
+env/
+.venv/
+ENV/
+
+# Database (don't ship local DB — Render uses ephemeral disk)
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment / Secrets
+.env
+.env.*
+*.env
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project report / scratch files
+code_screenshots_for_report.html
+
+# Logs
+*.log

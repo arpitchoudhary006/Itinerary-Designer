@@ -206,6 +206,18 @@ CREATE TABLE IF NOT EXISTS nearby_places (
     updated_at TEXT NOT NULL,
     FOREIGN KEY(destination_id) REFERENCES destinations(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS budget_expenses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    itinerary_id INTEGER NOT NULL,
+    owner_id TEXT NOT NULL,
+    category TEXT NOT NULL,
+    description TEXT NOT NULL,
+    amount REAL NOT NULL,
+    expense_date TEXT,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY(itinerary_id) REFERENCES itineraries(id) ON DELETE CASCADE
+);
 """
 
 
@@ -238,6 +250,21 @@ def init_db():
             db.execute("ALTER TABLE destinations ADD COLUMN sightseeing_time TEXT DEFAULT '4-5 hours'")
         if "weather_info" not in existing_dest_cols:
             db.execute("ALTER TABLE destinations ADD COLUMN weather_info TEXT")
+
+        # 3. Create budget_expenses table if it doesn't exist (safe migration)
+        db.executescript("""
+            CREATE TABLE IF NOT EXISTS budget_expenses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                itinerary_id INTEGER NOT NULL,
+                owner_id TEXT NOT NULL,
+                category TEXT NOT NULL,
+                description TEXT NOT NULL,
+                amount REAL NOT NULL,
+                expense_date TEXT,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(itinerary_id) REFERENCES itineraries(id) ON DELETE CASCADE
+            );
+        """)
 
         db.commit()
     finally:

@@ -52,6 +52,9 @@
             <a class="btn ghost" href="#stays-section">🏨 Hotels & Stays ({{ accommodations|length }})</a>
             <a class="btn ghost" href="#weather-section">🌦️ Weather</a>
             <a class="btn ghost" href="#map-section">🗺️ Interactive Map</a>
+            {% if expense_guide %}
+            <a class="btn ghost" href="#expense-guide-section">💰 Cost Guide</a>
+            {% endif %}
         </div>
     </div>
 </section>
@@ -423,6 +426,122 @@
         </div>
     {% endif %}
 </section>
+
+{% if expense_guide %}
+<!-- ============================================================ -->
+<!-- 💰 ESTIMATED TRIP COST GUIDE                                  -->
+<!-- ============================================================ -->
+<section id="expense-guide-section" class="section">
+    <div class="section-header" style="margin-bottom: 24px;">
+        <div>
+            <span class="tag" style="background: #fef3c7; color: #92400e; margin-bottom: 6px;">Cost Estimator</span>
+            <h2>💰 Estimated Trip Cost Guide</h2>
+            <p style="color: var(--muted); font-size: 0.95rem;">
+                {{ expense_guide.per_person_note }}
+            </p>
+        </div>
+        <a class="btn accent" href="{{ url_for('new_itinerary', destination=destination.id) }}">
+            🗓️ Plan This Trip
+        </a>
+    </div>
+
+    <!-- Budget Summary Banner -->
+    <div class="exp-summary-bar">
+        <div class="exp-summary-pill">
+            <span class="exp-summary-icon">💰</span>
+            <div>
+                <div class="exp-summary-label">Estimated Budget Range</div>
+                <div class="exp-summary-val">{{ expense_guide.summary.budget_range }}</div>
+            </div>
+        </div>
+        <div class="exp-summary-sep">per person</div>
+        <div class="exp-summary-pill">
+            <span class="exp-summary-icon">📅</span>
+            <div>
+                <div class="exp-summary-label">Average Per Day Cost</div>
+                <div class="exp-summary-val">{{ expense_guide.summary.per_day_avg }}</div>
+            </div>
+        </div>
+        <div class="exp-summary-sep">·</div>
+        <div class="exp-summary-pill exp-summary-pill-muted">
+            <span class="exp-summary-icon">ℹ️</span>
+            <div>
+                <div class="exp-summary-label">Note</div>
+                <div class="exp-summary-val" style="font-size: 0.85rem; font-weight: 600;">All costs are approximate & may vary by season</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Expense Accordions -->
+    <div class="exp-categories-wrap">
+        {% for cat in expense_guide.categories %}
+        <div class="exp-category-block">
+            <button class="exp-cat-header" onclick="toggleExpCat(this)" aria-expanded="true">
+                <span class="exp-cat-title">{{ cat.category }}</span>
+                <span class="exp-cat-range">
+                    ₹{{ '{:,.0f}'.format(cat.items | map(attribute='cost_min') | select() | list | sum if cat.items else 0) }}
+                    –
+                    ₹{{ '{:,.0f}'.format(cat.items | map(attribute='cost_max') | list | sum) }}
+                    <span style="font-weight: 400; font-size: 0.8rem; color: var(--muted);">total</span>
+                </span>
+                <span class="exp-toggle-arrow">▾</span>
+            </button>
+            <div class="exp-items-list">
+                <table class="exp-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 42%">Place / Expense Item</th>
+                            <th style="text-align: center; width: 20%">Min Cost</th>
+                            <th style="text-align: center; width: 20%">Max Cost</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cat.items %}
+                        <tr class="{{ 'exp-free-row' if item.cost_min == 0 and item.cost_max == 0 else '' }}">
+                            <td>
+                                <strong>{{ item.name }}</strong>
+                            </td>
+                            <td style="text-align: center; font-weight: 700; color: {{ '#059669' if item.cost_min == 0 else 'var(--primary-dark)' }};">
+                                {{ 'FREE' if item.cost_min == 0 and item.cost_max == 0 else '₹' ~ '{:,.0f}'.format(item.cost_min) }}
+                            </td>
+                            <td style="text-align: center; font-weight: 700; color: {{ '#059669' if item.cost_max == 0 else '#92400e' }};">
+                                {{ '—' if item.cost_min == 0 and item.cost_max == 0 else '₹' ~ '{:,.0f}'.format(item.cost_max) }}
+                            </td>
+                            <td style="color: var(--muted); font-size: 0.88rem;">{{ item.note }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Budget Tips -->
+    {% if expense_guide.budget_tips %}
+    <div class="exp-tips-box">
+        <h4 class="exp-tips-heading">💡 Insider Budget Tips for {{ destination.name }}</h4>
+        <ul class="exp-tips-list">
+            {% for tip in expense_guide.budget_tips %}
+            <li>{{ tip }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- CTA to Plan Itinerary -->
+    <div class="exp-cta-row">
+        <div>
+            <strong>Ready to plan your trip to {{ destination.name }}?</strong>
+            <p style="color: var(--muted); font-size: 0.9rem; margin-top: 4px;">Use the Budget Planner in your itinerary to track every expense against your planned budget.</p>
+        </div>
+        <a class="btn primary" href="{{ url_for('new_itinerary', destination=destination.id) }}">
+            🗓️ Create Itinerary & Track Budget
+        </a>
+    </div>
+</section>
+{% endif %}
 {% endblock %}
 
 {% block extra_scripts %}
@@ -458,5 +577,27 @@
             }
         });
     }
+
+    // Expense Guide Category Accordion Toggle
+    function toggleExpCat(btn) {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', !expanded);
+        const list = btn.nextElementSibling;
+        if (expanded) {
+            list.style.maxHeight = list.scrollHeight + 'px';
+            requestAnimationFrame(() => { list.style.maxHeight = '0'; list.classList.add('collapsed'); });
+        } else {
+            list.classList.remove('collapsed');
+            list.style.maxHeight = list.scrollHeight + 'px';
+            setTimeout(() => { list.style.maxHeight = 'none'; }, 360);
+        }
+    }
+
+    // Set initial heights for open accordions
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.exp-items-list').forEach(function (list) {
+            list.style.maxHeight = 'none';
+        });
+    });
 </script>
 {% endblock %}
